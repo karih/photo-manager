@@ -1,0 +1,11 @@
+<li ng-show='!node.hidden'>
+  <span ng-if="node.collapsed !== null" class='glyphicon' ng-class="{ 'glyphicon-plus': (node.collapsed === true), 'glyphicon-minus': (node.collapsed === false)}"  ng-click="toggle_collapse($event, node)">
+    <span class="border"></span>
+  </span>
+  <span ng-if="node.collapsed === null" class='glyphicon glyphicon-folder-open'>
+    <span class="border"></span>
+  </span>
+  <a class="item" ng-if="node.current === false" ui-sref='file-overview({path: node.path, offset: 0})'>{{ node.name }}</a> 
+  <span class="item" ng-if="node.current === true">{{ node.name }}</span>
+  <fsnodes ng-show='node' nodes='node.children'></fsnodes>
+</li>

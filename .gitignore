@@ -1,0 +1,4 @@
+*~
+*.pyc
+flask.log
+pm/devconfig.py

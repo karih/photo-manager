@@ -1,0 +1,5 @@
+On Debian these files should be at:
+/etc/nginx/sites-enabled/domain
+/etc/systemd/system/pm.service
+/etc/systemd/system/pm.socket
+/etc/tmpfiles.d/pm-gunicorn.conf

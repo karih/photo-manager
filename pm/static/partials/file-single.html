@@ -1,0 +1,69 @@
+<div class="img-properties sidebar col-md-4">
+  <table class="table table-striped">
+    <tr>
+      <td>Directory</td>
+      <td><a href="/file-overview{{ image.dirname }}">{{ image.dirname }}</a></td>
+    </tr>
+    <tr>
+      <td>Filename</td>
+      <td>{{ image.filename|truncate_filename:20}}</td>
+    </tr>
+    <tr>
+      <td>Dimensions</td>
+      <td>{{ image.width }} x {{ image.height }}</td>
+    </tr>
+    <tr>
+      <td>File size</td>
+      <td>{{ image.size | bytes }}</td>
+    </tr>
+    <tr>
+      <td>File creation time (ctime)</td>
+      <td>{{ image.ctime }}</td>
+    </tr>
+    <tr ng-if="image.date">
+      <td>Photo EXIF timestamp</td>
+      <td>{{ image.date }}</td>
+    </tr>
+    <tr ng-if="image.aperture">
+      <td>Aperture</td>
+      <td>{{ image.aperture }}</td>
+    </tr>
+    <tr ng-if="image.exposure">
+      <td>Exposure</td>
+      <td>{{ image.exposure }}</td>
+    </tr>
+    <tr ng-if="image.iso">
+      <td>ISO</td>
+      <td>{{ image.iso }}</td>
+    </tr>
+    <tr ng-if="image.focal_length">
+      <td>Focal length<span ng-if="image.focal_length_35"> (35 mm equiv)</span></td>
+      <td>{{ image.focal_length }}<span ng-if="image.focal_length_35"> ({{ image.focal_length_35 }})</span></td>
+    </tr>
+    <tr ng-if="image.make || image.model">
+      <td>Camera</td>
+      <td>{{ image.make }} {{ image.model }}</td>
+    </tr>
+    <tr ng-if="image.lens">
+      <td>Lens</td>
+      <td>{{ image.lens }}</td>
+    </tr>
+    <tr ng-if="image.orientation">
+      <td>Orientation</td>
+      <td>{{ image.orientation }}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><a target="_self" href="{{ image.original_url }}">Download</a></td>
+    </tr>
+
+  </table>
+</div>
+
+<div class="col-md-8" id="file-single">
+  <div class="img-block">
+    <div class="img-block-inner">
+      <img src="{{ image.large_url }}" />
+    </div>
+  </div>
+</div>

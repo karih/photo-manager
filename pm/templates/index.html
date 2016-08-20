@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="pm"> <!-- ng-controller="MainCtrl as main">-->
+  <head>
+    <base href="/">
+    <meta charset="utf-8">
+
+    <title>photo manager</title>
+
+    <!-- boostrap and friends -->
+    <link href="{{ url_for('static', filename='js/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+
+  </head>
+
+  <body ng-cloak>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">Photos</a>
+      </div>
+    </nav>
+
+    <div id="content" class="container-fluid">
+      <div ui-view class="row"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/angular/angular.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/angular-ui-router/release/angular-ui-router.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.controllers.js') }}"></script>
+
+  </body>
+</html>

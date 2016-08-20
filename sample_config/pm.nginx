@@ -1,0 +1,56 @@
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	
+	ssl_certificate /srv/DOMAIN_ROOT/keys/DOMAIN.pem;
+	ssl_certificate_key /srv/DOMAIN_ROOT/keys/DOMAIN.key;
+
+	ssl_session_cache shared:SSL:50m;
+	ssl_session_timeout 5m;
+	#ssl_dhparam /etc/nginx/dhparams.pem;
+	ssl_prefer_server_ciphers on;
+	ssl_protocols TLSv1.1 TLSv1.2;
+	ssl_ciphers "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4";
+	
+	root /srv/DOMAIN_ROOT/html;
+
+	# Add index.php to the list if you are using PHP
+	index index.html;
+
+	server_name DOMAIN;
+
+	allow 127.0.0.1;
+	deny all;
+
+	location / {
+		try_files $uri @proxy;
+		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+	}
+
+	#location /static/ {
+	#	root /srv/DOMAIN_ROOT/pm/static;
+	#	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+	#}
+
+	location @proxy {
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $http_host;
+		proxy_redirect off;
+		proxy_pass http://127.0.0.1:8000;
+		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+		add_header X-Frame-Options SAMEORIGIN;
+		add_header X-Content-Type-Options nosniff;
+		add_header X-XSS-Protection "1; mode=block";
+		#add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.google-analytics.com https://assets.zendesk.com https://connect.facebook.net; img-src 'self' https://ssl.google-analytics.com https://s-static.ak.facebook.com https://assets.zendesk.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.zendesk.com; font-src 'self' https://themes.googleusercontent.com; frame-src https://assets.zendesk.com https://www.facebook.com https://s-static.ak.facebook.com https://tautt.zendesk.com; object-src 'none'";
+
+	}
+}
+
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name DOMAIN;
+	return 301 https://DOMAIN$request_uri;
+}
+

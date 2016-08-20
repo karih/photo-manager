@@ -1,0 +1,7 @@
+SECRET_KEY = 'secret'
+import os
+
+TEMP_DIR = '/tmp'
+SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dbname'
+DEBUG = True
+SEARCH_ROOT = os.environ['HOME']
