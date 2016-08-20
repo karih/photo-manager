@@ -1,3 +1,6 @@
+# We assume the root of the site is at /srv/DOMAIN_ROOT under which we'll find the pm directory.
+# Additionally, ssl keys are in /srv/DOMAIN_ROOT/keys
+
 server {
 	listen 443 ssl;
 	listen [::]:443 ssl;
@@ -14,7 +17,6 @@ server {
 	
 	root /srv/DOMAIN_ROOT/html;
 
-	# Add index.php to the list if you are using PHP
 	index index.html;
 
 	server_name DOMAIN;
@@ -27,10 +29,10 @@ server {
 		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
 	}
 
-	#location /static/ {
-	#	root /srv/DOMAIN_ROOT/pm/static;
-	#	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-	#}
+	location /static/ {
+		root /srv/DOMAIN_ROOT/pm;
+		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+	}
 
 	location @proxy {
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

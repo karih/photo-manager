@@ -1,11 +1,18 @@
 [Unit]
-Description=gunicorn socket
+Description=pm gunicorn daemon
+Requires=pm.socket
+After=network.target postgresql.service
 
-[Socket]
-ListenStream=/run/pm-gunicorn/socket
-ListenStream=127.0.0.1:8000
+[Service]
+PIDFile=/run/pm-gunicorn/pid
+User=USERNAME
+Group=USERNAME
+Environment=PM_CONFIG=/srv/DOMAIN/config.cfg
+WorkingDirectory=/srv/DOMAIN
+ExecStart=/srv/DOMAIN/env/bin/gunicorn --pid /run/pm-gunicorn/pid pm:app
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
 
 [Install]
-WantedBy=sockets.target
-
-
+WantedBy=multi-user.target

@@ -45,7 +45,7 @@ else
 
   if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then 
 		echo "Reinitializing python environment"
-    ssh ${LOGIN} rm -r ${HOSTDIR}/env
+    ssh ${LOGIN} rm -rf ${HOSTDIR}/env
     ssh ${LOGIN} mkdir ${HOSTDIR}/env
     ssh ${LOGIN} virtualenv -p /usr/bin/python2 ${HOSTDIR}/env
     ssh ${LOGIN} ${HOSTDIR}/env/bin/pip install -r ${HOSTDIR}/deployment_requirements.pip
