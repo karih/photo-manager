@@ -1,8 +1,13 @@
 import os
 
-SECRET_KEY = 'secret'
-TEMP_DIR = '/tmp'
-SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dbname'
 DEBUG = True
-SEARCH_ROOT = os.environ['HOME']
+SECRET_KEY = 'secret'
+SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dbname'
 USE_X_ACCEL = False
+
+# TEMP_DIR is where thumbnails (small and large) are stored, so probably /tmp is not 
+# good unless you want to reindex everything on reboot. 
+TEMP_DIR = '/var/tmp'
+
+# SEARCH_ROOT is the root folder under which we search for photos
+SEARCH_ROOT = os.environ['HOME']
