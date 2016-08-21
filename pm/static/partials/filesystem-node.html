@@ -5,7 +5,7 @@
   <span ng-if="node.collapsed === null" class='glyphicon glyphicon-folder-open'>
     <span class="border"></span>
   </span>
-  <a class="item" ng-if="node.current === false" ui-sref='file-manager-overview({path: node.path, offset: 0})'>{{ node.name }}</a> 
+  <a class="item" ng-if="node.current === false" ui-sref='file-manager.overview({path: node.path, offset: 0})'>{{ node.name }}</a> 
   <span class="item" ng-if="node.current === true">{{ node.name }}</span>
   <fsnodes ng-show='node' nodes='node.children'></fsnodes>
 </li>

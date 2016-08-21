@@ -11,13 +11,18 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
     });
 
 		$stateProvider
-			.state('file-manager-single', {
-				url: '/file-manager-single/:id',
+			.state('file-manager', {
+				abstract: true,
+				url: '/file-manager',
+				template: '<ui-view />'
+			})
+			.state('file-manager.single', {
+				url: '/single/:id',
 				templateUrl: '/static/partials/file-manager-single.html',
 				controller: 'FileManagerSingleCtrl'
 			})
-			.state('file-manager-overview', {
-				url: '/file-manager-overview{path:nonURIEncoded}?{offset:int}&{limit:int}',
+			.state('file-manager.overview', {
+				url: '/overview{path:nonURIEncoded}?{offset:int}&{limit:int}',
 				templateUrl: '/static/partials/file-manager-overview.html',
 				controller: 'FileManagerOverviewCtrl',
 				params: { 
@@ -27,7 +32,7 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				},
 			});
 
-		$urlRouterProvider.otherwise('/file-manager-overview');
+		$urlRouterProvider.otherwise('/file-manager/overview');
 
 		$locationProvider.html5Mode(true);
 	}]);
