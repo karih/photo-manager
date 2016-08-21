@@ -85,12 +85,13 @@ class ImageFile(Base):
 
             shutil.move(large_path, obj.path_large)
             shutil.move(small_path, obj.path_thumb)
+
             if app.config["SAVE_MASK"] is not None:
-                os.chmod(large_path, app.config["SAVE_MASK"])
-                os.chmod(small_path, app.config["SAVE_MASK"])
+                os.chmod(obj.path_large, app.config["SAVE_MASK"])
+                os.chmod(obj.path_thumb, app.config["SAVE_MASK"])
             if app.config["SAVE_GROUP"] is not None:
-                os.chown(large_path, -1, app.config["SAVE_GROUP"])
-                os.chown(small_path, -1, app.config["SAVE_GROUP"])
+                os.chown(obj.path_large, -1, app.config["SAVE_GROUP"])
+                os.chown(obj.path_thumb, -1, app.config["SAVE_GROUP"])
 
             return obj
         finally:

@@ -95,8 +95,8 @@ def process(orig_filename, thumbnails):
 
         info["lens"] = first(parse(m, "dng:Lens"))
 
-        logging.debug([x for x in m.items() if "focal" in x[0].lower()])
-        logging.debug([x for x in m.items() if "lens" in x[0].lower()])
+        #logging.debug([x for x in m.items() if "focal" in x[0].lower()])
+        #logging.debug([x for x in m.items() if "lens" in x[0].lower()])
 
         for size, dest in thumbnails:
             with im.clone() as cl:
