@@ -4,7 +4,7 @@
     <li>
       <span ng-if="node.collapsed !== null" class='glyphicon' ng-class="{ 'glyphicon-plus': (root.collapsed === true), 'glyphicon-minus': (root.collapsed === false)}"  ng-click="toggle_collapse($event, root)"></span>
       <span ng-if="node.collapsed === null" class='glyphicon glyphicon-folder-open'></span>
-      <a class="item" ng-if="root.current === false" ui-sref="file-overview({path: '/', offset: 0})"><em>Allt</em></a> 
+      <a class="item" ng-if="root.current === false" ui-sref="file-manager-overview({path: '/', offset: 0})"><em>Allt</em></a> 
       <span class="item" ng-if="root.current === true"><em>Allt</em></span> 
       <fsnodes nodes="root.children"></fsnodes>
     </li>
@@ -16,7 +16,7 @@
   <div ng-include="'/static/partials/pagination-snippet.html'"></div>
 
   <div ng-repeat="image in images">
-    <a ng-if="!image.expanded" ng-click="toggle_image($event, image)" class="img-block" ui-sref="file-single({id: image.id})"> 
+    <a ng-if="!image.expanded" ng-click="toggle_image($event, image)" class="img-block" ui-sref="file-manager-single({id: image.id})"> 
       <div class="img-block-inner"><img src="{{ image.thumb_url }}" /></div>
       <div class="img-block-text"><p>#{{ image.id }} &mdash; {{ image.filename | truncate_filename:24 }}</p></div>
     </a>

@@ -13,6 +13,8 @@ def image_dict(image):
 
 @app.route('/api/files')
 def files():
+    """ Returns ImageFile objects after filtering, offsetting and limiting """
+
     prefix = request.args.get("filter", None)
     offset = int(request.args.get("offset", 0))
     try:
@@ -47,13 +49,21 @@ def files():
 
 @app.route('/api/file/<int:id>', methods=['GET'])
 def file(id):
+    """ Returns information dict() about ImageFile """
+
     image = ImageFile.query.get(id)
     return jsonify(image=image_dict(image))
 
 
 @app.route('/api/filesystem', methods=['GET'])
 def filesystem():
-    # should be cached
+    """ 
+        A very poor way of creating a json object describing the 
+        filesystem tree displayed in the file manager.
+        
+        Should at least be cached or something.., querying all 
+        imagefile objects is not a good idea.
+    """
     root = {}
 
     def unfold(p):

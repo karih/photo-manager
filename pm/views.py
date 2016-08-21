@@ -22,6 +22,4 @@ def image_file(id, size):
     else:
         path = getattr(img, 'path_%s' % size)
 
-    # XXX: Return direct nginx reverse read thingy
     return send_file(path)
-    
