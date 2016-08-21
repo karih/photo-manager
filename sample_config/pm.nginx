@@ -34,6 +34,16 @@ server {
 		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
 	}
 
+	location /internal/tmp {
+		internal;
+		alias TEMP_DIR; # should be the value of TEMP_DIR in flask config
+	}
+
+	location /internal/root {
+		internal;
+		alias SEARCH_ROOT; # should be the value of SEARCH_ROOT in flask config
+	}
+
 	location @proxy {
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header Host $http_host;

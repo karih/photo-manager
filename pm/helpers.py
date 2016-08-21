@@ -4,9 +4,14 @@ import os, sys
 import datetime
 import logging
 import numpy as np
+
+import flask
+
 from PIL import Image as PILImage
 from PIL import ExifTags
 from wand.image import Image
+
+from . import app
 
 
 def process(orig_filename, thumbnails):
@@ -106,4 +111,18 @@ def process(orig_filename, thumbnails):
 def resize_dimensions(orig, outer):
     scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
     return np.round(orig[0]*scaling).astype(int), np.round(orig[1]*scaling).astype(int)
+
+def send_file(f):
+    def xaccel(p):
+        r = flask.Response("")
+        r.headers["X-Accel-Redirect"] = p
+        r.headers["Content-Type"] = ""
+        return r
+
+    if app.config["USE_X_ACCEL"] and f.startswith(app.config["TEMP_DIR"]):
+        return xaccel(os.path.join('/internal/tmp', f[len(app.config["TEMP_DIR"])+1:]))
+    elif app.config["USE_X_ACCEL"] and f.startswith(app.config["SEARCH_ROOT"]):
+        return xaccel(os.path.join('/internal/root', f[len(app.config["SEARCH_ROOT"])+1:]))
+    else:
+        return flask.send_file(f)
 

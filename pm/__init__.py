@@ -2,12 +2,8 @@
 
 import os
 import logging
-import datetime, calendar
-import simplejson as json
 
-from flask import Flask, render_template, jsonify
-#from flask_sockets import Sockets
-from gevent import Timeout, Greenlet, sleep
+import flask
 
 import sqlalchemy as sa
 from sqlalchemy import create_engine
@@ -17,7 +13,9 @@ from sqlalchemy.ext.declarative import declarative_base
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", filename='flask.log', level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger().addHandler(logging.StreamHandler())
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
+
+app.config.from_object('pm.defaults')
 
 if 'PM_CONFIG' in os.environ:
     app.config.from_envvar('PM_CONFIG')
@@ -33,3 +31,13 @@ Base.query = db_session.query_property()
 from . import models
 from . import views
 from . import api
+
+@app.before_request
+def configure_proxy():
+    if app.config["USE_X_ACCEL"] is None:
+        if "X-FORWARDED-FOR" in flask.request.headers:
+            # should be harmless, even if not behind a proxy?
+            app.config["USE_X_ACCEL"] = True
+        else:
+            app.config["USE_X_ACCEL"] = False
+

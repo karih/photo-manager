@@ -1,11 +1,14 @@
-from flask import render_template, Response, abort
+from flask import render_template, Response, abort, request
 from . import app
 from .models import ImageFile
+from .helpers import send_file
+
 
 @app.route('/')
 @app.route('/<path:path>')
 def index(path=None):
     return render_template('index.html')
+
 
 @app.route('/image/<id>/<size>')
 def image_file(id, size):
@@ -20,7 +23,5 @@ def image_file(id, size):
         path = getattr(img, 'path_%s' % size)
 
     # XXX: Return direct nginx reverse read thingy
-    with open(path) as f:
-        return Response(f.read(), mimetype='image/jpeg')
-
-    I
+    return send_file(path)
+    
