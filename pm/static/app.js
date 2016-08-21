@@ -17,7 +17,7 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				template: '<ui-view />'
 			})
 			.state('file-manager.single', {
-				url: '/single/:id',
+				url: '/single/{id:int}',
 				templateUrl: '/static/partials/file-manager-single.html',
 				controller: 'FileManagerSingleCtrl'
 			})
