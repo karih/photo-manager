@@ -24,12 +24,12 @@ Getting up and running
 ----------------------
 Start by installing PostgreSQL and creating a database and user.
 
-1. Create pm/devconfig.py from pm/devconfig.py.sample
+1. Create `pm/devconfig.py` from `pm/devconfig.py.sample`.
 2. Install js/css dependencies::
     
     cd pm/static; bower install
 
-3. Install python dependencies::
+3. Install Python dependencies::
      
     pip install -r requirements.pip
 
@@ -49,9 +49,13 @@ Start by installing PostgreSQL and creating a database and user.
 
 Deploying to server
 -------------------
-Similar steps to above are required, some differences:
+Similar steps to above are required, some notable differences:
 
 * The configuration file can be defined using the environment variable `PM_CONFIG`.
 * nothing else?
 
-In `sample_config` there are some sample configuration files for systemd and nginx, assuming you run flask through gunicorn. Also there is a rough deployment script in `deploy.sh`.
+In `sample_config` there are some sample configuration files for `systemd` and `nginx`, assuming you run flask through gunicorn. Also there is a rough deployment script in `deploy.sh`, that should be used as::
+ 
+    ./deploy.sh user@server /srv/DOMAIN
+
+Where `user@server` is directly passed to `ssh` and can therefore be replaced with an alias from `~/.ssh/config`.

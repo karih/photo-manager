@@ -12,9 +12,7 @@
 #    to the production configuration file.
 # 4) Web server should be configured to forward requests to gunicorn.
 
-
-
-TMPFILE=/tmp/$(date +%Y%m%d%H%M%S).tar.bz2
+#TMPFILE=/tmp/$(date +%Y%m%d%H%M%S).tar.bz2
 LOGIN=${1}
 HOSTDIR=${2}
 
@@ -38,10 +36,13 @@ else
   fi
 
   # TODO: switch to git-archive
-  tar -cjf $TMPFILE pm resetdb.py __init__.py scan.py ${add_files}
-  scp $TMPFILE ${LOGIN}:${TMPFILE}
-
-  ssh ${LOGIN} tar -jxf ${TMPFILE} -C $HOSTDIR
+  tar -cj -f - pm resetdb.py __init__.py scan.py ${add_files} | ssh $LOGIN tar -xj -f - -C $HOSTDIR
+  #scp $TMPFILE ${LOGIN}:${TMPFILE}
+  #ssh ${LOGIN} tar -jxf ${TMPFILE} -C $HOSTDIR
+	
+	# clean up tar
+  #ssh ${LOGIN} rm ${TMPFILE}
+	#rm ${TMPFILE}
 
   if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then 
 		echo "Reinitializing python environment"
@@ -49,6 +50,7 @@ else
     ssh ${LOGIN} mkdir ${HOSTDIR}/env
     ssh ${LOGIN} virtualenv -p /usr/bin/python2 ${HOSTDIR}/env
     ssh ${LOGIN} ${HOSTDIR}/env/bin/pip install -r ${HOSTDIR}/deployment_requirements.pip
+		rm deployment_requirements.pip
   fi
 
   if [[ $do_reinitialize_db =~ ^(y|Y)$ ]]; then 
@@ -72,5 +74,4 @@ else
 
   ## kill worker processes
   ssh ${LOGIN} killall gunicorn
-	rm ${TMPFILE}
 fi
