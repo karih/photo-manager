@@ -35,15 +35,15 @@ Start by installing PostgreSQL and creating a database and user.
 
 3. Install database tables::
 
-    python resetdb.py
+    python manage.py resetdb
 
 4. Scan for photos::
 
-    python scan.py
+    python manage.py scan
 
 5. Run development server::
 
-    python run.py
+    python manage.py run
 
 6. Browse to http://127.0.0.1:8000 
 

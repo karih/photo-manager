@@ -6,8 +6,8 @@ import os.path
 
 import wand
 
-from models import ImageFile, db_session
-from . import app
+from ..models import ImageFile, db_session
+from .. import app
 
 
 def find_all_files(root_path):
@@ -37,4 +37,5 @@ def find_and_add_files():
             except OSError, e:
                 print("Error processing file %s (OSError: %s)" % (file, e))
 
-
+def main(*args):
+    find_and_add_files()

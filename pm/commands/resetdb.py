@@ -1,7 +1,7 @@
 # encoding = utf-8
 
-from pm import db_engine, Base
-import pm.models
+from .. import db_engine, Base
+from .. import models
 
 def db_drop_all():
     Base.metadata.drop_all(db_engine)
@@ -9,7 +9,7 @@ def db_drop_all():
 def db_create_all():
     Base.metadata.create_all(db_engine)
 
-if __name__ == "__main__":
+def main(*args):
     db_drop_all()
     db_create_all()
 
