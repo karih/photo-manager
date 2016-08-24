@@ -21,17 +21,23 @@ server {
 
 	server_name DOMAIN;
 
+	# CHANGE FOR PRODUCTION
 	allow 127.0.0.1;
 	deny all;
 
+	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+	add_header X-Frame-Options DENY;
+	add_header X-Content-Type-Options nosniff;
+	add_header X-XSS-Protection "1; mode=block";
+	add_header Content-Security-Policy "default-src 'self'; child-src 'none'; object-src 'none'; style-src 'self' 'unsafe-inline'";
+	#add_header Public-Key-Pins ""; # consider pinning the intermediate certificate
+
 	location / {
 		try_files $uri @proxy;
-		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
 	}
 
 	location /static/ {
 		root /srv/DOMAIN_ROOT/pm;
-		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
 	}
 
 	location /internal/tmp {
@@ -49,12 +55,6 @@ server {
 		proxy_set_header Host $http_host;
 		proxy_redirect off;
 		proxy_pass http://127.0.0.1:8000;
-		add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-		add_header X-Frame-Options SAMEORIGIN;
-		add_header X-Content-Type-Options nosniff;
-		add_header X-XSS-Protection "1; mode=block";
-		#add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.google-analytics.com https://assets.zendesk.com https://connect.facebook.net; img-src 'self' https://ssl.google-analytics.com https://s-static.ak.facebook.com https://assets.zendesk.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.zendesk.com; font-src 'self' https://themes.googleusercontent.com; frame-src https://assets.zendesk.com https://www.facebook.com https://s-static.ak.facebook.com https://tautt.zendesk.com; object-src 'none'";
-
 	}
 }
 
