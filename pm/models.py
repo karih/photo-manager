@@ -9,19 +9,12 @@ import logging
 import tempfile
 
 import sqlalchemy as sa
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, HSTORE, JSON
 
 from . import app, db_engine, db_session, Base
 
 from . import helpers
-
-class FileSource(Base):
-    __tablename__ = 'sources'
-
-    id = sa.Column(sa.Integer, primary_key=True)
-    dir = sa.Column(sa.Unicode(255), nullable=False)
-    alias = sa.Column(sa.Unicode(255), nullable=False)
 
 
 class ImageFile(Base):
@@ -53,7 +46,11 @@ class ImageFile(Base):
     # other exif stuff
     lens = sa.Column(sa.String(128), nullable=True)
 
-    #exif = sa.Column(JSON, nullable=True)
+    # foreign keys
+    photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
+    photo = relationship("Photo", back_populates="files")
+    derivatives = relationship('PhotoDerivative', back_populates='file')
+    
 
     THUMB_SIZE = 256, 256
     LARGE_SIZE = 800, 800
@@ -137,6 +134,18 @@ class ImageFile(Base):
         }
 
 
+people_association_table = sa.Table('people_photos', Base.metadata,
+    sa.Column('people_id', sa.Integer, sa.ForeignKey('people.id')),
+    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
+)
+
+
+tags_association_table = sa.Table('tags_photos', Base.metadata,
+    sa.Column('tag_id', sa.Integer, sa.ForeignKey('tags.id')),
+    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
+)
+
+
 class Photo(Base):
     ''' Photo() is an entity corresponding to a single photo.
         If several versions of a photo exists, for example due to post processing
@@ -144,7 +153,18 @@ class Photo(Base):
     __tablename__ = 'photos'
         
     id = sa.Column(sa.Integer, primary_key=True)
-    shot= sa.Column(sa.Unicode(255), nullable=False)
+
+    files = relationship("ImageFile", back_populates="photo")
+    people = relationship("Person", secondary=people_association_table, back_populates="photos")
+    tags = relationship("Tag", secondary=tags_association_table, back_populates="photos")
+
+    def merge(self, photo):
+        for tag in photo.tags:
+            self.tags.append(tag)
+        for person in photo.people:
+            self.people.append(person)
+        for file in photo.files:
+            file.photo = self
 
 
 class PhotoDerivative(Base):
@@ -152,15 +172,24 @@ class PhotoDerivative(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
 
-    photo = relationship('Photo', backref=backref('derivatives'))
-    photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=False, primary_key=True)
-
+    file_id = sa.Column(sa.Integer, sa.ForeignKey('files.id'), nullable=False)
+    file = relationship('ImageFile', back_populates='derivatives')
 
 
 class Person(Base):
     __tablename__ = "people"
 
     id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.Unicode(255), nullable=False) # timestamp
+    name = sa.Column(sa.Unicode(255), nullable=False)
 
+    photos = relationship("Photo", secondary=people_association_table, back_populates="people")
+
+
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    tag = sa.Column(sa.Unicode(255), nullable=False)
+
+    photos = relationship("Photo", secondary=tags_association_table, back_populates="tags")
 

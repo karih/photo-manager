@@ -1,14 +1,12 @@
 # encoding: utf-8
 
 import os, sys
+import os.path
 import datetime
 import logging
-import numpy as np
 
 import flask
 
-from PIL import Image as PILImage
-from PIL import ExifTags
 from wand.image import Image
 
 from . import app
@@ -110,13 +108,15 @@ def process(orig_filename, thumbnails):
 
 def resize_dimensions(orig, outer):
     scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
-    return np.round(orig[0]*scaling).astype(int), np.round(orig[1]*scaling).astype(int)
+    return round(orig[0]*scaling), round(orig[1]*scaling)
 
-def send_file(f):
+def send_file(f, **kwargs):
     def xaccel(p):
         r = flask.Response("")
         r.headers["X-Accel-Redirect"] = p
         r.headers["Content-Type"] = ""
+        if kwargs.get("as_attachment", False):
+            r.headers["Content-Disposition"] = "attachment; filename=%s" % kwargs.get("attachment_filename", os.path.basename(p))
         return r
 
     if app.config["USE_X_ACCEL"] and f.startswith(app.config["TEMP_DIR"]):
@@ -124,5 +124,5 @@ def send_file(f):
     elif app.config["USE_X_ACCEL"] and f.startswith(app.config["SEARCH_ROOT"]):
         return xaccel(os.path.join('/internal/root', f[len(app.config["SEARCH_ROOT"])+1:]))
     else:
-        return flask.send_file(f)
+        return flask.send_file(f, **kwargs)
 

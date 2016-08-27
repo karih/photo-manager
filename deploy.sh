@@ -35,13 +35,13 @@ else
   fi
 
   # TODO: switch to git-archive
-  tar -cj -f - pm resetdb.py __init__.py scan.py ${add_files} | ssh $LOGIN tar -xj -f - -C $HOSTDIR
+  tar -cj -f - pm manage.py  __init__.py ${add_files} | ssh $LOGIN tar -xj -f - -C $HOSTDIR
 
   if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then 
     echo "Reinitializing python environment"
     ssh ${LOGIN} rm -rf ${HOSTDIR}/env
     ssh ${LOGIN} mkdir ${HOSTDIR}/env
-    ssh ${LOGIN} virtualenv -p /usr/bin/python2 ${HOSTDIR}/env
+    ssh ${LOGIN} virtualenv -p /usr/bin/python3 ${HOSTDIR}/env
     ssh ${LOGIN} ${HOSTDIR}/env/bin/pip install -r ${HOSTDIR}/deployment_requirements.pip
     rm deployment_requirements.pip
   fi
@@ -49,7 +49,7 @@ else
   if [[ $do_reinitialize_db =~ ^(y|Y)$ ]]; then 
     echo "Reinitializing database"
     # for now we assume the production config file is ${HOSTDIR}/config.cfg
-    PM_CONFIG=${HOSTDIR}/config.cfg ssh ${LOGIN} ${HOSTDIR}/env/bin/python ${HOSTDIR}/resetdb.py
+    ssh ${LOGIN} PM_CONFIG=${HOSTDIR}/config.cfg ${HOSTDIR}/env/bin/python ${HOSTDIR}/manage.py resetdb
   fi
 
   if [[ $do_file_scan =~ ^(y|Y)$ ]]; then 
@@ -57,7 +57,7 @@ else
     # for now we assume the production config file is ${HOSTDIR}/config.cfg
     # TODO: doesn't really seem to work, perhaps the connection gets cut for some reason..
     #       really should just schedule some process, started by systemd or something
-    PM_CONFIG=${HOSTDIR}/config.cfg ssh ${LOGIN} ${HOSTDIR}/env/bin/python ${HOSTDIR}/scan.py
+    ssh ${LOGIN} PM_CONFIG=${HOSTDIR}/config.cfg ${HOSTDIR}/env/bin/python ${HOSTDIR}/manage.py scan
   fi
 
   #if [[ $do_file_scan =~ ^(y|Y)$ ]]; then 

@@ -1,3 +1,5 @@
+import os.path
+
 from flask import render_template, Response, abort, request
 from . import app
 from .models import ImageFile
@@ -18,8 +20,6 @@ def image_file(id, size):
 
     # XXX: Careful..
     if size == "original": 
-        path = img.path
+        return send_file(img.path, as_attachment=True, attachment_filename=os.path.basename(img.path))
     else:
-        path = getattr(img, 'path_%s' % size)
-
-    return send_file(path)
+        return send_file(getattr(img, 'path_%s' % size))

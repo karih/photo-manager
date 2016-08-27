@@ -6,8 +6,8 @@ import os.path
 
 import wand
 
-from models import ImageFile, db_session
-from . import app
+from ..models import ImageFile, db_session
+from .. import app
 
 
 def find_all_files(root_path):
@@ -32,9 +32,10 @@ def find_and_add_files():
                 image = ImageFile.load(file)
                 db_session.add(image)
                 db_session.commit()
-            except wand.exceptions.BlobError, e:
+            except wand.exceptions.BlobError as e:
                 print("Error processing file %s (BlobError: %s)" % (file, e))
-            except OSError, e:
+            except OSError as e:
                 print("Error processing file %s (OSError: %s)" % (file, e))
 
-
+def main(*args):
+    find_and_add_files()

@@ -1,8 +1,8 @@
 import os.path
 
 from flask import jsonify, url_for, request
-from . import app
-from .models import ImageFile
+from .. import app
+from ..models import ImageFile
 
 def image_dict(image):
     dct = image.dct()
@@ -21,7 +21,7 @@ def files():
         limit  = int(request.args.get("limit", 20))
         if limit > 20:
             limit = 20
-    except ValueError, e:
+    except ValueError as e:
         limit = 20
 
     order = request.args.get("order", None)
@@ -39,8 +39,6 @@ def files():
     query = ImageFile.query
     if prefix is not None:
         query = query.filter(ImageFile.path.like('%s%%' % prefix))
-    else:
-        query = query.all()
 
     query = query.order_by(ImageFile.path)
     query = query.offset(offset).limit(limit)
