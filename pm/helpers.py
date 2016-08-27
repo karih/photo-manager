@@ -4,12 +4,9 @@ import os, sys
 import os.path
 import datetime
 import logging
-import numpy as np
 
 import flask
 
-from PIL import Image as PILImage
-from PIL import ExifTags
 from wand.image import Image
 
 from . import app
@@ -111,7 +108,7 @@ def process(orig_filename, thumbnails):
 
 def resize_dimensions(orig, outer):
     scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
-    return np.round(orig[0]*scaling).astype(int), np.round(orig[1]*scaling).astype(int)
+    return round(orig[0]*scaling), round(orig[1]*scaling)
 
 def send_file(f, **kwargs):
     def xaccel(p):

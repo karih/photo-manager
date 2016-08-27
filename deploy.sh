@@ -41,7 +41,7 @@ else
     echo "Reinitializing python environment"
     ssh ${LOGIN} rm -rf ${HOSTDIR}/env
     ssh ${LOGIN} mkdir ${HOSTDIR}/env
-    ssh ${LOGIN} virtualenv -p /usr/bin/python2 ${HOSTDIR}/env
+    ssh ${LOGIN} virtualenv -p /usr/bin/python3 ${HOSTDIR}/env
     ssh ${LOGIN} ${HOSTDIR}/env/bin/pip install -r ${HOSTDIR}/deployment_requirements.pip
     rm deployment_requirements.pip
   fi
