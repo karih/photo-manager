@@ -10,6 +10,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
+from elasticsearch_dsl.connections import connections
+
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", filename='flask.log', level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger().addHandler(logging.StreamHandler())
 
@@ -40,4 +42,6 @@ def configure_proxy():
             app.config["USE_X_ACCEL"] = True
         else:
             app.config["USE_X_ACCEL"] = False
+
+connections.create_connection(hosts=app.config["ELASTICSEARCH_HOSTS"], timeout=20)
 

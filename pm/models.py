@@ -158,6 +158,25 @@ class Photo(Base):
     people = relationship("Person", secondary=people_association_table, back_populates="photos")
     tags = relationship("Tag", secondary=tags_association_table, back_populates="photos")
 
+    def first_file(self, property):
+        try:
+            return [getattr(f, property) for f in self.files if getattr(f, property) is not None][0]
+        except IndexError:
+            return None
+
+    @property
+    def date(self): return self.first_file("date")
+
+    @property
+    def aperture(self): return self.first_file("aperture")
+
+    @property
+    def focal_length_35(self): return self.first_file("focal_length_35")
+    
+    @property
+    def iso(self): return self.first_file("iso")
+
+
     def merge(self, photo):
         for tag in photo.tags:
             self.tags.append(tag)

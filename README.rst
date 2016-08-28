@@ -20,8 +20,37 @@ What should be possible:
 
 and probably a lot more.
 
+Prerequisites
+-------------
+Besides Python this software requires the following:
+
+* PostgreSQL 
+* ElasticSearch 
+* ImageMagick
+* UFRaw (https://en.wikipedia.org/wiki/UFRaw) for raw photo processing.
+
+Probably you also want something like `nginx` running in front of the Python webserver.
+
+ElasticSearch
+~~~~~~~~~~~~~
+
+* Download version of ElasticSearch from https://www.elastic.co/downloads/elasticsearch
+* Go to your project folder and::
+  
+    mkdir -p es ${TMP_DIR}/es/{data,logs}
+    tar -zxf ~/Downloads/elasticsearch-2.3.5.tar.gz -C es
+
+* Change the path.data and path.logs to `${TMP_DIR}/es/{data,logs}`.
+* Start it with::
+
+    es/elasticsearch-2.3.5/bin/elasticsearch
+
 Getting up and running
 ----------------------
+
+
+
+
 Start by installing PostgreSQL and creating a database and user.
 
 1. Create `pm/devconfig.py` from `pm/devconfig.py.sample`.
@@ -59,3 +88,5 @@ In `sample_config` there are some sample configuration files for `systemd` and `
     ./deploy.sh user@server /srv/DOMAIN
 
 Where `user@server` is directly passed to `ssh` and can therefore be replaced with an alias from `~/.ssh/config`.
+
+
