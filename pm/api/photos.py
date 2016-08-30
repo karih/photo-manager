@@ -1,5 +1,5 @@
 
-from flask import jsonify, Response, request
+from flask import jsonify, Response, request, url_for
 
 from .. import app
 from ..documents import PhotoDocument, PhotoSearch
@@ -28,9 +28,15 @@ def photos():
     
     response = q.sort(order)[offset:limit].execute()
 
+    def dct(photo):
+        d = {}
+        d["thumb_url"] = url_for('image_file', id=photo.file_id, size="thumb")
+        d["id"] = photo.meta.id
+        return d
+
     return jsonify({
         'facets': dict([(key, [{'value' : f[0], 'selected' : f[2], 'count' : f[1]} for f in getattr(response.facets, key)]) for key, val in PhotoSearch.facets.items()]), 
-        'photos' : [d.extended_dict() for d in response.hits], 
+        'photos' : [dct(photo) for photo in response.hits], 
         'results' : response.hits.total,
         'query' : q.to_dict()
     })

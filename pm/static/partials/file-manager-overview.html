@@ -12,13 +12,13 @@
 </div>
 
 
-<div class="col-md-9 main" id="file-overview">
+<div class="col-md-9 main image-list" id="file-overview">
   <div ng-include="'/static/partials/pagination-snippet.html'"></div>
 
   <div ng-repeat="image in images">
     <a ng-if="!image.expanded" ng-click="toggle_image($event, image)" class="img-block" ui-sref="file-manager.single({id: image.id})"> 
       <div class="img-block-inner"><img src="{{ image.thumb_url }}" /></div>
-      <div class="img-block-text"><p>#{{ image.id }} &mdash; {{ image.filename | truncate_filename:24 }}</p></div>
+      <div class="img-block-text"><p>F#{{ image.id }} &mdash; {{ image.filename | truncate_filename:24 }}</p></div>
     </a>
     <div ng-if="image.expanded" ng-click="toggle_image($event, image)" class="img-expanded-block">
       <div class="img-expanded-inner"> <img src="{{ image.large_url }}" /> </div>

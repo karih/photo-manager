@@ -11,6 +11,7 @@ import tempfile
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, HSTORE, JSON
+from sqlalchemy.sql import func
 
 from . import app, db_engine, db_session, Base
 
@@ -31,6 +32,7 @@ class ImageFile(Base):
     height = sa.Column(sa.SmallInteger, nullable=False)
     ctime = sa.Column(sa.DateTime, nullable=False)
     format = sa.Column(sa.SmallInteger, nullable=False)
+    scanned = sa.Column(sa.DateTime, server_default=func.now()) # datetime of file discovery
 
     # most important exif data
     date = sa.Column(sa.DateTime, nullable=True) # exif timestamp
@@ -47,9 +49,10 @@ class ImageFile(Base):
     lens = sa.Column(sa.String(128), nullable=True)
 
     # foreign keys
-    photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
-    photo = relationship("Photo", back_populates="files")
+    photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id', use_alter=True, name="files_photo_id_fkey"), nullable=True)
+    photo = relationship("Photo", back_populates="files", foreign_keys="ImageFile.photo_id")
     derivatives = relationship('PhotoDerivative', back_populates='file')
+    primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
     
 
     THUMB_SIZE = 256, 256
@@ -60,7 +63,7 @@ class ImageFile(Base):
     def load(cls, file_path):
         size = os.path.getsize(file_path)
         ext = os.path.splitext(file_path)[1]
-        with open(file_path) as f:
+        with open(file_path, 'rb') as f:
             m = hashlib.sha512()
             m.update(f.read())
             hash = m.hexdigest()
@@ -154,27 +157,26 @@ class Photo(Base):
         
     id = sa.Column(sa.Integer, primary_key=True)
 
-    files = relationship("ImageFile", back_populates="photo")
+    files = relationship("ImageFile", back_populates="photo", foreign_keys="ImageFile.photo_id")
     people = relationship("Person", secondary=people_association_table, back_populates="photos")
     tags = relationship("Tag", secondary=tags_association_table, back_populates="photos")
 
-    def first_file(self, property):
-        try:
-            return [getattr(f, property) for f in self.files if getattr(f, property) is not None][0]
-        except IndexError:
-            return None
+    file_id = sa.Column(sa.Integer, sa.ForeignKey('files.id', use_alter=True, name="photos_file_id_fkey"), nullable=False)
+    file = relationship("ImageFile", back_populates="primaries", foreign_keys="Photo.file_id")
 
-    @property
-    def date(self): return self.first_file("date")
+    # normally copied from one of the files
+    date = sa.Column(sa.DateTime, nullable=True)
+    aperture = sa.Column(sa.Float, nullable=True)
+    exposure = sa.Column(sa.Float, nullable=True)
+    focal_length = sa.Column(sa.Float, nullable=True)
+    focal_length_35 = sa.Column(sa.Float, nullable=True)
+    iso = sa.Column(sa.Integer, nullable=True)
+    make = sa.Column(sa.String(128), nullable=True)
+    model = sa.Column(sa.String(128), nullable=True)
+    lens = sa.Column(sa.String(128), nullable=True)
 
-    @property
-    def aperture(self): return self.first_file("aperture")
-
-    @property
-    def focal_length_35(self): return self.first_file("focal_length_35")
-    
-    @property
-    def iso(self): return self.first_file("iso")
+    # was any of the information manually changed
+    changed = sa.Column(sa.DateTime, nullable=True)
 
 
     def merge(self, photo):

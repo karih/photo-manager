@@ -9,8 +9,15 @@ class PhotoDocument(esd.DocType):
 
     date = esd.Date()
     aperture = esd.Float()
-    focal_length_35 = esd.Integer()
+    exposure = esd.Float()
+    focal_length = esd.Float()
+    focal_length_35 = esd.Float()
     iso = esd.Integer()
+    make = esd.String()
+    model = esd.String()
+    lens = esd.String()
+
+    file_id = esd.Integer()
 
     def extended_dict(self):
         dct = self.to_dict()

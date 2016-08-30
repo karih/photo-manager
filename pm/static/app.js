@@ -13,11 +13,11 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 		$stateProvider
 			.state('file-manager', {
 				abstract: true,
-				url: '/file-manager',
+				url: '/files',
 				template: '<ui-view />'
 			})
 			.state('file-manager.single', {
-				url: '/single/{id:int}',
+				url: '/{id:int}',
 				templateUrl: '/static/partials/file-manager-single.html',
 				controller: 'FileManagerSingleCtrl'
 			})
@@ -30,9 +30,24 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 					offset: {dynamic: true, value: 0}, 
 					limit: {dynamic: true, value: 20}
 				},
+			})
+			.state('photos', {
+				url: '/photos',
+				templateUrl: '/static/partials/photos/photos.html',
+				controller: 'PhotosOverviewCtrl',
+				params: {
+					offset: {dynamic: true, value: 0}, 
+					limit: {dynamic: true, value: 20}
+				}
+			})
+			.state('photos.single', {
+				url: '/{id:int}',
+				templateUrl: '/static/partials/photos/photos.html',
+				controller: 'PhotoCtrl'
 			});
 
-		$urlRouterProvider.otherwise('/file-manager/overview');
+
+		$urlRouterProvider.otherwise('/files/overview');
 
 		$locationProvider.html5Mode(true);
 	}]);

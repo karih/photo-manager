@@ -42,7 +42,8 @@ def main():
 
         # create a new photo object
         photo = Photo()
-        photo.files.append(image)
+        photo.file = image
         db_session.add(photo)
         db_session.commit()
-
+        image.photo = photo
+        db_session.commit()

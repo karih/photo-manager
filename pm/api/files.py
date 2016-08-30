@@ -32,7 +32,6 @@ def files():
         d["filename"] = os.path.split(image.full_path)[1]
         d["id"] = image.id
         d["date"] = image.date
-        d["ctime"] = image.ctime
         return d
 
 

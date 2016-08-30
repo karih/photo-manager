@@ -1,0 +1,24 @@
+<div class="col-md-3 sidebar">
+  <div ng-repeat="(name, options) in facets" class="facet-group">
+    <h4>{{ name }}</h4>
+    <ul>
+      <li ng-repeat="option in options">{{ option.value }} ({{ option.count }})</li>
+    </ul>
+
+  </div>
+
+</div>
+
+
+<div class="col-md-9 main image-list" id="photos">
+  <div ng-include="'/static/partials/pagination-snippet.html'"></div>
+
+  <div ng-repeat="photo in photos">
+    <a class="img-block" ui-sref="photos.single({id: photo.id})"> 
+      <div class="img-block-inner"><img src="{{ photo.thumb_url }}" /></div>
+      <div class="img-block-text"><p>P#{{ photo.id }}</p></div>
+    </a>
+  </div>
+
+  <div ng-include="'/static/partials/pagination-snippet.html'"></div>
+</div>

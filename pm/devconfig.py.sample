@@ -3,6 +3,7 @@ import os
 DEBUG = True
 SECRET_KEY = 'secret'
 SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/dbname'
+ELASTICSEARCH_HOSTS = ['127.0.0.1:9200', ]
 USE_X_ACCEL = False
 
 # TEMP_DIR is where thumbnails (small and large) are stored, so probably /tmp is not 

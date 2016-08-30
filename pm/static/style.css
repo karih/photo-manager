@@ -5,18 +5,18 @@
 
 
 /* FILE OVERVIEW */
-#file-overview div.img-expanded-block, #file-overview a.img-block { margin: 5px; background-color: #EEE; padding: 0; display: block; }
+#file-overview div.img-expanded-block, .image-list a.img-block { margin: 5px; background-color: #EEE; padding: 0; display: block; }
 
 /* FILE OVERVIEW -> THUMB BLOCK */
-#file-overview a.img-block {  float: left; width: 270px; height: 290px; }
-#file-overview a.img-block:hover {  background-color: orange; }
-#file-overview a.img-block.expanded { background-color: red; }
+.image-list a.img-block {  float: left; width: 270px; height: 290px; }
+.image-list a.img-block:hover {  background-color: orange; }
+.image-list a.img-block.expanded { background-color: red; }
 
-#file-overview div.img-block-inner { position: relative; top: 7px; left: 7px; width: 256px; height: 256px; background-color: #CCC; text-align: center; white-space: nowrap; }
-#file-overview div.img-block-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
-#file-overview a.img-block img { vertical-align: middle; background: black; max-width: 256px; max-height: 256px; } 
-#file-overview div.img-block-text { margin: 0 7px; margin-top: 7px; height: 20px; }
-#file-overview div.img-block-text p { height: 100%; vertical-align: middle; text-align: center; }
+.image-list div.img-block-inner { position: relative; top: 7px; left: 7px; width: 256px; height: 256px; background-color: #CCC; text-align: center; white-space: nowrap; }
+.image-list div.img-block-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
+.image-list a.img-block img { vertical-align: middle; background: black; max-width: 256px; max-height: 256px; } 
+.image-list div.img-block-text { margin: 0 7px; margin-top: 7px; height: 20px; }
+.image-list div.img-block-text p { height: 100%; vertical-align: middle; text-align: center; }
 
 /* FILE OVERVIEW -> EXPANDED BLOCK */
 #file-overview div.img-expanded-block { clear: both; padding: 7px; white-space: nowrap; min-height: 0px; }
