@@ -1,6 +1,0 @@
-  <nav class="pagination">
-    <ul class="pager">
-      <li class="previous" ng-class="{ disabled: offset == 0 }"><a ui-sref="file-manager.overview({path: path, offset: max(0, offset-limit), limit: limit})" ng-disabled="offset == 0">Fyrri</a></li>
-      <li class="next" ng-class="{ disabled: images.length < limit }"><a ui-sref="file-manager.overview({path: path, offset: offset+limit, limit: limit})" ng-disabled="images.length < limit">Naesta</a></li>
-    </ul>
-  </nav>

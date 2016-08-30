@@ -32,7 +32,7 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				},
 			})
 			.state('photos', {
-				url: '/photos',
+				url: '/photos?{offset:int}&{limit:int}',
 				templateUrl: '/static/partials/photos/photos.html',
 				controller: 'PhotosOverviewCtrl',
 				params: {

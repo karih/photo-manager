@@ -26,7 +26,7 @@ def photos():
 
     q = PhotoSearch(query=search, filters=filters).build_search()
     
-    response = q.sort(order)[offset:limit].execute()
+    response = q.sort(order)[offset:offset+limit].execute()
 
     def dct(photo):
         d = {}

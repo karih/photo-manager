@@ -39,6 +39,10 @@ app.controller('FileManagerOverviewCtrl', ['$scope', '$http', '$stateParams', '$
 		}
 	}
 
+	$scope.movePage = function(offset, limit) {
+		return $state.href('file-manager.overview', {path: $scope.path, offset: offset, limit: limit});
+	}
+
 	this.uiOnParamsChanged = function (changedParams, $transition$) {
 		/* state called again with changed parameters */
 		$scope.path   = changedParams.hasOwnProperty("path")   ? changedParams.path : $scope.path;

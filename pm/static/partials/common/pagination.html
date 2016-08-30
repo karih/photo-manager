@@ -1,0 +1,16 @@
+<nav class="pagination-nav">
+  <!--<pre> {{ offset }} {{ limit }} {{ count }} {{ hits }} {{ disablePrevious }} {{ disableNext }} {{ page }} {{ pages }}</pre>-->
+
+  <ul class="pagination">
+    <li class="previous" ng-class="{ disabled: disablePrevious }">
+      <a ng-href="{{ disablePrevious ? '' : changePage(previous_offset, limit) }}">&laquo;</a>
+    </li>
+    <li ng-repeat="page in pages" ng-class="{ active: page.current, disabled: !page.seq }">
+      <a ng-if="page.seq" ng-href="{{ changePage(page.offset, limit) }}">{{ page.page }}</a>
+      <span ng-if="!page.seq">...</span>
+    </li>
+    <li class="next" ng-class="{ disabled: disableNext }">
+      <a ng-href="{{ disableNext ? '' : changePage(next_offset, limit) }}">&raquo;</a>
+    </li>
+  </ul>
+</nav>

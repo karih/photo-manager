@@ -49,3 +49,8 @@ ul.pager { margin: 0 10px; }
 #file-single div.img-block-inner { padding: 7px; background-color: #CCC; white-space: nowrap; float: left; }
 #file-single div.img-properties { clear; both; }
 
+
+
+.pagination .disabled a { cursor: not-allowed; }
+.pagination-nav { clear: both; text-align: center; }
+

@@ -22,14 +22,14 @@ and probably a lot more.
 
 Prerequisites
 -------------
-Besides Python3 and the libraries specified in `requirements.pip` this software requires the following:
+Besides Python3 and the libraries specified in ``requirements.pip`` this software requires the following:
 
 * PostgreSQL
 * Elasticsearch
 * ImageMagick
 * UFRaw (https://en.wikipedia.org/wiki/UFRaw) for raw photo processing.
 
-Probably you also want something like `nginx` running in front of the Python webserver.
+Probably you also want something like ``nginx`` running in front of the Python webserver.
 
 Elasticsearch
 ~~~~~~~~~~~~~
@@ -40,7 +40,7 @@ Elasticsearch
     mkdir -p es ${TMP_DIR}/es/{data,logs}
     tar -zxf ~/Downloads/elasticsearch-2.3.5.tar.gz -C es
 
-* Change the `path.data` and `path.logs` to `${TMP_DIR}/es/{data,logs}`.
+* Change the ``path.data`` and ``path.logs`` to ``${TMP_DIR}/es/{data,logs}``.
 * Start it with::
 
     es/elasticsearch-2.3.5/bin/elasticsearch
@@ -58,7 +58,7 @@ After installing the software dependencies listed above:
     
     cd pm/static; bower install
 
-3. Create `pm/devconfig.py` from `pm/devconfig.py.sample` and configure as needed.
+3. Create ``pm/devconfig.py`` from ``pm/devconfig.py.sample`` and configure as needed.
 
 4. Install database tables::
 
@@ -81,11 +81,11 @@ Deploying to server
 -------------------
 Similar steps to above are required, some notable differences:
 
-* The configuration file can be defined using the environment variable `PM_CONFIG`.
+* The configuration file can be defined using the environment variable ``PM_CONFIG``.
 * nothing else?
 
-In `sample_config/` there are some sample configuration files for `systemd` and `nginx`, assuming you run flask through gunicorn. Also there is a rough deployment script in `deploy.sh`, that should be used as::
+In ``sample_config/`` there are some sample configuration files for ``systemd`` and ``nginx``, assuming you run flask through gunicorn. Also there is a rough deployment script in ``deploy.sh``, that should be used as::
  
     ./deploy.sh user@server /srv/DOMAIN
 
-Where `user@server` is directly passed to `ssh` and can therefore be replaced with an alias from `~/.ssh/config`.
+Where ``user@server`` is directly passed to ``ssh`` and can therefore be replaced with an alias from ``~/.ssh/config``.

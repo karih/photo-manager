@@ -11,7 +11,7 @@
 
 
 <div class="col-md-9 main image-list" id="photos">
-  <div ng-include="'/static/partials/pagination-snippet.html'"></div>
+  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" count="photos.length" hits="hits"></pagination>
 
   <div ng-repeat="photo in photos">
     <a class="img-block" ui-sref="photos.single({id: photo.id})"> 
@@ -20,5 +20,5 @@
     </a>
   </div>
 
-  <div ng-include="'/static/partials/pagination-snippet.html'"></div>
+  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" count="photos.length" hits="hits"></pagination>
 </div>

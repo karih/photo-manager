@@ -1,14 +1,15 @@
 app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state', '$document', function($scope, $http, $stateParams, $state, $document) {
 	console.log("PhotosOverviewCtrl(" + $stateParams + ")")
 
-	$scope.limit = $stateParams["limit"];
 	$scope.offset = $stateParams["offset"];
+	$scope.limit = $stateParams["limit"];
 
 	this.fetch = function(offset, limit) {
 		console.log("FETCHING");
 		$http.get('/api/photos', { params: {offset: offset, limit: limit} }).success(function(data) {
 			$scope.photos = data.photos;
 			$scope.facets = data.facets;
+			$scope.hits = data.results;
 		});
 	}
 
@@ -18,6 +19,10 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 		$scope.limit  = changedParams.hasOwnProperty("limit")  ? changedParams.limit : $scope.limit;
 		this.fetch($scope.offset, $scope.limit);
 	};
+
+	$scope.movePage = function(offset, limit) {
+		return $state.href('photos', {offset: offset, limit: limit});
+	}
 
 	this.fetch($scope.offset, $scope.limit);
 }]);
