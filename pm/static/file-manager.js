@@ -12,6 +12,9 @@ app.controller('FileManagerOverviewCtrl', ['$scope', '$http', '$stateParams', '$
 			$state.go('file-manager.overview', {path: $scope.path, offset: Math.max(0, $scope.offset-$scope.limit), limit: $scope.limit});
 		}	
 	});
+	$scope.$on('$destroy', function() {
+		$document.unbind('keydown');
+	});
 
 	this.fetch = function(path, offset, limit) {
 		console.log("FETCHING " + path + " o: " + offset + " l:" + limit);
@@ -19,6 +22,7 @@ app.controller('FileManagerOverviewCtrl', ['$scope', '$http', '$stateParams', '$
 			$scope.images = data.images;
 		});
 	}
+
 
 	$scope.toggle_image = function(event, image) {
 		if (!event.ctrlKey) {

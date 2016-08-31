@@ -1,4 +1,5 @@
 
+import logging
 from flask import jsonify, Response, request, url_for
 
 from .. import app
@@ -8,13 +9,17 @@ from ..models import Photo
 @app.route('/api/photos')
 def photos():
     filters = {}
-    if "date" in request.args:
-        filters["date"] = request.args["date"]
     if "aperture" in request.args:
-        filters["aperture"] = request.args["aperture"]
-    
+        filters["aperture"] = float(request.args["aperture"])
+    if "iso" in request.args:
+        filters["iso"] = int(request.args["iso"])
+    if "make" in request.args:
+        filters["make"] = request.args["make"]
+    if "lens" in request.args:
+        filters["lens"] = request.args["lens"]
+    if "focal_length_35" in request.args:
+        filters["focal_length_35"] = float(request.args["focal_length_35"])
 
-    date = request.args.get("date", None)
     offset = int(request.args.get("offset", 0))
     limit = int(request.args.get("limit", 20))
     search = request.args.get("filter", None)

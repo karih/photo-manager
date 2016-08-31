@@ -1,17 +1,14 @@
-<div class="col-md-3 sidebar">
-  <div ng-repeat="(name, options) in facets" class="facet-group">
-    <h4>{{ name }}</h4>
-    <ul>
-      <li ng-repeat="option in options">{{ option.value }} ({{ option.count }})</li>
-    </ul>
-
-  </div>
-
+<div class="col-md-2 sidebar">
+  <facet name="Aperture" options="facets.aperture" filter="filter_fun('aperture')(value)"></facet>
+  <facet name="ISO" options="facets.iso" filter="filter_fun('iso')(value)"></facet>
+  <facet name="Make" options="facets.make" filter="filter_fun('make')(value)"></facet>
+  <facet name="Lens" options="facets.lens" filter="filter_fun('lens')(value)"></facet>
+  <facet name="Focal Length (35mm)" options="facets.focal_length_35" filter="filter_fun('focal_length_35')(value)"></facet>
 </div>
 
 
 <div class="col-md-9 main image-list" id="photos">
-  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" count="photos.length" hits="hits"></pagination>
+  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" items="photos" hits="hits"></pagination>
 
   <div ng-repeat="photo in photos">
     <a class="img-block" ui-sref="photos.single({id: photo.id})"> 
@@ -20,5 +17,5 @@
     </a>
   </div>
 
-  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" count="photos.length" hits="hits"></pagination>
+  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" items="photos" hits="hits"></pagination>
 </div>

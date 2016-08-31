@@ -32,12 +32,21 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				},
 			})
 			.state('photos', {
-				url: '/photos?{offset:int}&{limit:int}',
+				url: '/photos?{offset:int}&{limit:int}&date&aperture&exposure&focal_length&focal_length_35&iso&make&model&lens',
 				templateUrl: '/static/partials/photos/photos.html',
 				controller: 'PhotosOverviewCtrl',
 				params: {
 					offset: {dynamic: true, value: 0}, 
-					limit: {dynamic: true, value: 20}
+					limit: {dynamic: true, value: 20},
+					date: {dynamic: true, value: null},
+					aperture: {dynamic: true, value: null},
+					exposure: {dynamic: true, value: null},
+					focal_length: {dynamic: true, value: null},
+					focal_length_35: {dynamic: true, value: null},
+					iso: {dynamic: true, value: null},
+					make: {dynamic: true, value: null},
+					model: {dynamic: true, value: null},
+					lens: {dynamic: true, value: null}
 				}
 			})
 			.state('photos.single', {

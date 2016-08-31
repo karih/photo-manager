@@ -1,0 +1,7 @@
+<div class="facet-group">
+  <h3>{{ name }}</h3>
+  <ul class="list-group">
+    <button class="list-group-item" ng-class="{ active: option.selected }" ng-repeat="option in options" ng-click="filter({value: option.value})">{{ option.value }} <span class="badge">{{ option.count }}</span></button>
+  </ul>
+
+</div>

@@ -13,7 +13,7 @@
 
 
 <div class="col-md-9 main image-list" id="file-overview">
-  <pagination ng-if="images.length" offset="offset" limit="limit" change-function="movePage" count="images.length"></pagination>
+  <pagination ng-if="images" offset="offset" limit="limit" change-function="movePage" items="images"></pagination>
 
   <div ng-repeat="image in images">
     <a ng-if="!image.expanded" ng-click="toggle_image($event, image)" class="img-block" ui-sref="file-manager.single({id: image.id})"> 
@@ -34,5 +34,5 @@
     </div>
   </div>
 
-  <pagination offset="offset" limit="limit" change-function="movePage" count="images.length"></pagination>
+  <pagination ng-if="images" offset="offset" limit="limit" change-function="movePage" items="images"></pagination>
 </div>

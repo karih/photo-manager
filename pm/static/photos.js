@@ -4,27 +4,62 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	$scope.offset = $stateParams["offset"];
 	$scope.limit = $stateParams["limit"];
 
-	this.fetch = function(offset, limit) {
-		console.log("FETCHING");
-		$http.get('/api/photos', { params: {offset: offset, limit: limit} }).success(function(data) {
+	this.fetch = function() {
+		//console.log("FETCHING ", $stateParams);
+		$http.get('/api/photos', {params: $stateParams} ).success(function(data) {
 			$scope.photos = data.photos;
 			$scope.facets = data.facets;
 			$scope.hits = data.results;
 		});
 	}
 
+	$document.bind('keydown', function(event, args) {
+		var new_state = JSON.parse(JSON.stringify($stateParams));
+		if (event.keyCode == 39 && ($scope.offset + $scope.limit <= $scope.hits)) {
+			new_state["offset"] = $scope.offset + $scope.limit;
+			$state.go('photos', new_state);
+		} else if (event.keyCode == 37) {
+			new_state["offset"] = Math.max(0, $scope.offset - $scope.limit);
+			$state.go('photos', new_state);
+		}	
+	});
+	$scope.$on('$destroy', function() {
+		$document.unbind('keydown');
+	});
+
 	this.uiOnParamsChanged = function (changedParams, $transition$) {
+		//console.log("CHANGE IN STATE");
 		/* state called again with changed parameters */
-		$scope.offset = changedParams.hasOwnProperty("offset") ? changedParams.offset : $scope.offset;
-		$scope.limit  = changedParams.hasOwnProperty("limit")  ? changedParams.limit : $scope.limit;
-		this.fetch($scope.offset, $scope.limit);
+		angular.forEach(changedParams, function(value, key) {
+			$stateParams[key] = value;
+			$scope[key] = value;
+		})
+		this.fetch();
 	};
 
 	$scope.movePage = function(offset, limit) {
-		return $state.href('photos', {offset: offset, limit: limit});
+		var new_state = JSON.parse(JSON.stringify($stateParams));
+		new_state["offset"] = offset;
+		new_state["limit"] = limit;
+		return $state.href('photos', new_state);
 	}
 
-	this.fetch($scope.offset, $scope.limit);
+	$scope.filter_fun = function(filter) {
+		console.log("Generating filter function", filter);
+		return function(value) {
+			console.log("Moving states for filter ", filter, ". $stateParams: ", $stateParams);
+			var new_state = JSON.parse(JSON.stringify($stateParams));
+			new_state["offset"] = 0; 
+			if (new_state[filter] == value) {
+				new_state[filter] = null; // deselect
+			} else {
+				new_state[filter] = value; // select
+			}
+			$state.go("photos", new_state);
+		}
+	}
+
+	this.fetch();
 }]);
 
 app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', function($scope, $http, $stateParams) {

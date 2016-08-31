@@ -15,9 +15,9 @@ class PhotoDocument(esd.DocType):
     focal_length = esd.Float()
     focal_length_35 = esd.Float()
     iso = esd.Integer()
-    make = esd.String()
-    model = esd.String()
-    lens = esd.String()
+    make = esd.String(index='not_analyzed')
+    model = esd.String(index='not_analyzed')
+    lens = esd.String(index='not_analyzed')
 
     file_id = esd.Integer()
 
@@ -32,6 +32,8 @@ class PhotoSearch(esd.FacetedSearch):
 
     facets = {
         'aperture' : esd.TermsFacet(field="aperture", size=10000),
+        'make' : esd.TermsFacet(field="make", size=10000),
+        'lens' : esd.TermsFacet(field="lens", size=10000),
         'iso' : esd.TermsFacet(field="iso", size=10000),
         'focal_length_35' : esd.HistogramFacet(field="focal_length_35", interval=10, min_doc_count=1),
         'date' : esd.DateHistogramFacet(field='date', interval='day', min_doc_count=1)
