@@ -3,6 +3,7 @@
 
 import os
 import os.path
+import logging
 
 import wand
 
@@ -13,7 +14,8 @@ from .. import app
 def find_all_files(root_path):
     for dirname, dirnames, filenames in os.walk(root_path):
         for d in dirnames[:]:
-            if (d[0] == ".") or (d.lower() in ('tmp', 'temp', 'backup')):
+            if os.path.join(dirname, d) in app.config["SEARCH_EXCLUDE_ABSOLUTE_PATHS"] or (d[0] == ".") or (d.lower() in app.config["SEARCH_EXCLUDE_DIRS"]):
+                logging.info("Skipping directory %s", os.path.join(dirname, d))
                 dirnames.remove(d)
 
         for filename in filenames:
@@ -28,6 +30,7 @@ def find_and_add_files():
         failed = 0
 
         if ImageFile.query.filter(ImageFile.path == file).count() < 1:
+            logging.info("Processing %s", file)
             try:
                 image = ImageFile.load(file)
                 db_session.add(image)
@@ -36,6 +39,8 @@ def find_and_add_files():
                 print("Error processing file %s (BlobError: %s)" % (file, e))
             except OSError as e:
                 print("Error processing file %s (OSError: %s)" % (file, e))
+        else:
+            logging.debug("Skipping %s (already in database)", file)
 
 def main(*args):
     find_and_add_files()

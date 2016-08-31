@@ -1,7 +1,9 @@
 import elasticsearch_dsl as esd
 
+from . import app
 
-photos = esd.Index('photos')
+
+photos = esd.Index(app.config["ELASTICSEARCH_INDEX"])
 
 
 @photos.doc_type

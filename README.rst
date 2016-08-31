@@ -31,20 +31,6 @@ Besides Python3 and the libraries specified in ``requirements.pip`` this softwar
 
 Probably you also want something like ``nginx`` running in front of the Python webserver.
 
-Elasticsearch
-~~~~~~~~~~~~~
-
-* Download Elasticsearch from https://www.elastic.co/downloads/elasticsearch
-* Go to your project folder and::
-  
-    mkdir -p es ${TMP_DIR}/es/{data,logs}
-    tar -zxf ~/Downloads/elasticsearch-2.3.5.tar.gz -C es
-
-* Change the ``path.data`` and ``path.logs`` to ``${TMP_DIR}/es/{data,logs}``.
-* Start it with::
-
-    es/elasticsearch-2.3.5/bin/elasticsearch
-
 Getting up and running
 ----------------------
 
@@ -58,7 +44,7 @@ After installing the software dependencies listed above:
     
     cd pm/static; bower install
 
-3. Create ``pm/devconfig.py`` from ``pm/devconfig.py.sample`` and configure as needed.
+3. Create ``pm/devconfig.py`` overwriting defaults from ``pm/defaults.py`` as necessary.
 
 4. Install database tables::
 

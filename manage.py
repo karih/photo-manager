@@ -1,7 +1,12 @@
 import sys
+import logging
+
 import pm.commands as cmd
 
 if __name__ == "__main__":
+
+    logging.getLogger().setLevel(logging.INFO)
+
     commands = [c for c in cmd.__all__ if not c.startswith("_")]
 
     if len(sys.argv) < 2 or sys.argv[1] not in commands:

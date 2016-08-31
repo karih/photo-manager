@@ -64,6 +64,7 @@ def process(orig_filename, thumbnails):
     info = {}
     
     with Image(filename=orig_filename) as im:
+        logging.debug("Opened file %s", orig_filename)
         stat = os.stat(orig_filename)
         m = im.metadata
         info["width"] = im.width
@@ -93,8 +94,8 @@ def process(orig_filename, thumbnails):
 
         info["lens"] = first(parse(m, "dng:Lens"))
 
-        #logging.debug([x for x in m.items() if "focal" in x[0].lower()])
-        #logging.debug([x for x in m.items() if "lens" in x[0].lower()])
+        logging.debug([x for x in m.items() if "focal" in x[0].lower()])
+        logging.debug([x for x in m.items() if "lens" in x[0].lower()])
 
         for size, dest in thumbnails:
             with im.clone() as cl:
@@ -102,7 +103,7 @@ def process(orig_filename, thumbnails):
                 cl.auto_orient()
                 cl.resize(*resize_dimensions((cl.width, cl.height), size))
                 cl.save(filename=dest)
-        logging.debug("Closing file %s" % orig_filename)
+        logging.debug("Closing file %s", orig_filename)
 
     return info
 
