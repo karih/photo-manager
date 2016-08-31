@@ -1,4 +1,3 @@
-
 app.directive('pagination', function() {
 	return {
 		restrict: "E",
@@ -13,6 +12,7 @@ app.directive('pagination', function() {
 		controller: function($scope) { 
 			var near=3;
 			var update_scope = function() {
+				console.log("Updating paginator, offset=", $scope.offset, ", limit=", $scope.limit, ", count=", $scope.count, ", hits=", $scope.hits);
 				$scope.disableNext = angular.isDefined($scope.hits) ? ($scope.hits <= $scope.offset + $scope.limit) : ($scope.count < $scope.limit);
 				$scope.disablePrevious = ($scope.offset == 0);
 				$scope.previous_offset = Math.max(0, $scope.offset - $scope.limit);
@@ -47,6 +47,8 @@ app.directive('pagination', function() {
 				}
 			}
 
+			$scope.$watch('hits', update_scope);
+			$scope.$watch('count', update_scope);
 			$scope.$watch('offset', update_scope);
 			$scope.$watch('limit', update_scope);
 				
@@ -55,3 +57,7 @@ app.directive('pagination', function() {
 	}
 });
 
+
+app.directive('thumbnail-view', function() {
+	return {}
+});
