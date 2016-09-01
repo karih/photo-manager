@@ -29,7 +29,7 @@ def files():
     def dct(image):
         d = {}
         d["thumb_url"] = url_for('image_file', id=image.id, size="thumb")
-        d["filename"] = os.path.split(image.full_path)[1]
+        d["filename"] = image.basename
         d["id"] = image.id
         d["date"] = image.date
         return d

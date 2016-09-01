@@ -12,7 +12,7 @@ from wand.image import Image
 from . import app
 
 
-def process(orig_filename, thumbnails):
+def extract_info(orig_filename):
     def first(*lst):
         for i in lst:
             if i is not None:
@@ -94,18 +94,22 @@ def process(orig_filename, thumbnails):
 
         info["lens"] = first(parse(m, "dng:Lens"))
 
-        logging.debug([x for x in m.items() if "focal" in x[0].lower()])
-        logging.debug([x for x in m.items() if "lens" in x[0].lower()])
+        #logging.debug([x for x in m.items() if "focal" in x[0].lower()])
+        #logging.debug([x for x in m.items() if "lens" in x[0].lower()])
 
+        logging.debug("Closing file %s", orig_filename)
+
+    return info
+
+def create_thumbnails(filename, thumbnails):
+    with Image(filename=filename) as im:
         for size, dest in thumbnails:
+            logging.debug("Creating thumbnail %s from filename %s", dest, filename)
             with im.clone() as cl:
                 cl.format = 'jpeg'
                 cl.auto_orient()
                 cl.resize(*resize_dimensions((cl.width, cl.height), size))
                 cl.save(filename=dest)
-        logging.debug("Closing file %s", orig_filename)
-
-    return info
 
 def resize_dimensions(orig, outer):
     scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))

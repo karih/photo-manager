@@ -22,23 +22,16 @@ def main():
             continue
         
         # next step, check for file with same basename (minus extension) and same date
-        query = ImageFile.query.filter(ImageFile.photo_id != None).filter(ImageFile.path.like('%%%s%%' % os.path.splitext(os.path.basename(image.path))[0]))
+        query = ImageFile.query.filter(ImageFile.photo_id != None).filter(ImageFile.path.like('%%%s%%' % os.path.splitext(image.basename)[0]))
 
-        if image.date is None:
-            query = query.filter(ImageFile.date == None)
-        else:
-            query = query.filter(and_(
-                ImageFile.date >= (image.date - datetime.timedelta(seconds=1)), 
-                ImageFile.date <= (image.date + datetime.timedelta(seconds=1))
-            ))
+        if image.date is not None:
+            res = query.filter(ImageFile.date == image.date).all()
 
-        res = query.all()
-
-        if len(res) > 0:
-            logging.warning("Assigning similarities based on filename (%s, %s) and date (%s, %s)", image.path, res[0].path, image.date, res[0].date)
-            image.photo = res[0].photo
-            db_session.commit()
-            continue
+            if len(res) > 0:
+                logging.warning("Assigning similarities based on filename (%s, %s) and date (%s, %s)", image.path, res[0].path, image.date, res[0].date)
+                image.photo = res[0].photo
+                db_session.commit()
+                continue
 
         # create a new photo object
         photo = Photo()

@@ -20,6 +20,6 @@ def image_file(id, size):
 
     # XXX: Careful..
     if size == "original": 
-        return send_file(img.path, as_attachment=True, attachment_filename=os.path.basename(img.path))
+        return send_file(img.path, as_attachment=True, attachment_filename=img.basename)
     else:
         return send_file(getattr(img, 'path_%s' % size))

@@ -62,29 +62,41 @@ class ImageFile(Base):
     @classmethod
     def load(cls, file_path):
         size = os.path.getsize(file_path)
-        ext = os.path.splitext(file_path)[1]
+        extension = os.path.splitext(file_path)[1][1:]
         with open(file_path, 'rb') as f:
             m = hashlib.sha512()
             m.update(f.read())
             hash = m.hexdigest()
-        stat = os.stat(file_path)
 
         _, large_path = tempfile.mkstemp()
         _, small_path = tempfile.mkstemp()
 
         try:
-            info = helpers.process(file_path, [(cls.THUMB_SIZE, small_path), (cls.LARGE_SIZE, large_path)])
+
+            info = helpers.extract_info(file_path)
 
             obj = cls(
                 path=file_path, 
                 size=size, 
                 hash=hash, 
-                format=cls.EXTENSIONS[ext[1:].lower()],
+                format=cls.EXTENSIONS[str(extension).lower()],
                 **info
                 )
 
-            shutil.move(large_path, obj.path_large)
-            shutil.move(small_path, obj.path_thumb)
+            # The following should be simplified
+            thumbs = []
+            if not os.path.exists(obj.path_large):
+                thumbs.append((cls.LARGE_SIZE, large_path))
+            if not os.path.exists(obj.path_thumb):
+                thumbs.append((cls.THUMB_SIZE, small_path))
+
+            if len(thumbs) > 0:
+                helpers.create_thumbnails(file_path, thumbs)
+
+            if not os.path.exists(obj.path_large):
+                shutil.move(large_path, obj.path_large)
+            if not os.path.exists(obj.path_thumb):
+                shutil.move(small_path, obj.path_thumb)
 
             if app.config["SAVE_MASK"] is not None:
                 os.chmod(obj.path_large, app.config["SAVE_MASK"])
@@ -102,8 +114,8 @@ class ImageFile(Base):
 
 
     @property
-    def full_path(self):
-        return self.path
+    def basename(self):
+        return os.path.basename(self.path)
 
     @property
     def path_thumb(self):
@@ -122,7 +134,7 @@ class ImageFile(Base):
             'width' : self.width,
             'height' : self.height,
             'ctime' : self.ctime,
-            'filename' : os.path.basename(self.path), 
+            'filename' : self.basename, 
             'dirname' : os.path.dirname(self.path),
             'date' : self.date,
             'aperture': self.aperture,
