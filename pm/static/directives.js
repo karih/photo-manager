@@ -68,10 +68,26 @@ app.directive('facet', function() {
 			filter: "&"
 		},
 		controller: function($scope) {
-			console.log("Controller", $scope.filter);
+			//console.log("Controller", $scope.filter);
 
 		},
 		templateUrl: "/static/partials/common/facet.html"
+	}
+});
+
+app.directive('dateFacet', function() {
+	return {
+		restrict: "E",
+		replace: true,
+		scope: {
+			name: "@",
+			years: "=",
+			filter: "&"
+		},
+		controller: function($scope) {
+			console.log("DateFacetController", $scope);
+		},
+		templateUrl: "/static/partials/common/date_facet.html"
 	}
 });
 

@@ -1,0 +1,23 @@
+<div class="facet-group">
+  <h3>{{ name }}</h3>
+  <ul class="list-group">
+    <li ng-repeat-start="year in years" class="list-group-item" ng-class="{ active: year.selected }" ng-click="filter({value: year.value })">
+      <span class="glyphicon" ng-class="{ 'glyphicon-minus': year.expanded, 'glyphicon-plus': !year.expanded }"></span>
+      {{ year.value }} <span class="badge">{{ year.count }}</span>
+    </li>
+    <li ng-repeat-start="month in year.months" class="list-group-item" ng-class="{ active: month.selected }" ng-show="year.expanded" ng-click="filter({value: month.value })">
+      <span class="indent"></span>
+      <span class="glyphicon" ng-class="{ 'glyphicon-minus': month.expanded, 'glyphicon-plus': !month.expanded }"></span>
+      {{ month.value }} <span class="badge">{{ month.count }}</span>
+    </li>
+    <li ng-repeat-start="day in month.days" class="list-group-item" ng-class="{ active: day.selected }" ng-show="month.expanded" ng-click="filter({value: day.value })">
+      <span class="indent"></span>
+      <span class="indent"></span>
+      <span class="indent"></span>
+      {{ day.value }} <span class="badge">{{ day.count }}</span>
+    </li>
+    <li style="display: none" ng-repeat-end>endar3</li>
+    <li style="display: none" ng-repeat-end>endar2</li>
+    <li style="display: none" ng-repeat-end>endar1</li>
+  </ul>
+</div>

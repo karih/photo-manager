@@ -54,3 +54,5 @@ ul.pager { margin: 0 10px; }
 .pagination .disabled a { cursor: not-allowed; }
 .pagination-nav { clear: both; text-align: center; }
 
+
+.facet-group span.indent { min-width: 14px; margin-right: 20px; background-color: black; }
