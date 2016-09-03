@@ -1,38 +1,39 @@
-
-<div class="col-md-3 sidebar" ng-controller="FilesystemTreeCtrl">
-  <ul class="file-tree">
-    <li>
-      <span ng-if="node.collapsed !== null" class='glyphicon' ng-class="{ 'glyphicon-plus': (root.collapsed === true), 'glyphicon-minus': (root.collapsed === false)}"  ng-click="toggle_collapse($event, root)"></span>
-      <span ng-if="node.collapsed === null" class='glyphicon glyphicon-folder-open'></span>
-      <a class="item" ng-if="root.current === false" ui-sref="file-manager.overview({path: '/', offset: 0})"><em>Allt</em></a> 
-      <span class="item" ng-if="root.current === true"><em>Allt</em></span> 
-      <fsnodes nodes="root.children"></fsnodes>
-    </li>
-  </ul>
-</div>
-
-
-<div class="col-md-9 main image-list" id="file-overview">
-  <pagination ng-if="images" offset="offset" limit="limit" change-function="movePage" items="images"></pagination>
-
-  <div ng-repeat="image in images">
-    <a ng-if="!image.expanded" ng-click="toggle_image($event, image)" class="img-block" ui-sref="file-manager.single({id: image.id})"> 
-      <div class="img-block-inner"><img src="{{ image.thumb_url }}" /></div>
-      <div class="img-block-text"><p>F#{{ image.id }} &mdash; {{ image.filename | truncate_filename:24 }}</p></div>
-    </a>
-    <div ng-if="image.expanded" ng-click="toggle_image($event, image)" class="img-expanded-block">
-      <div class="img-expanded-inner"> <img src="{{ image.large_url }}" /> </div>
-      <div class="img-expanded-attrs"> 
-        <table>
-          <tr ng-repeat="(key, value) in image">
-            <td>{{ key }}</td>
-            <td>{{ value }}</td>
-          </tr>
-        </table>
-      </div>
-      <hr />
-    </div>
+<div class="row">
+  <div class="col-md-3 sidebar" ng-controller="FilesystemTreeCtrl">
+    <ul class="file-tree">
+      <li>
+        <span ng-if="node.collapsed !== null" class='glyphicon' ng-class="{ 'glyphicon-plus': (root.collapsed === true), 'glyphicon-minus': (root.collapsed === false)}"  ng-click="toggle_collapse($event, root)"></span>
+        <span ng-if="node.collapsed === null" class='glyphicon glyphicon-folder-open'></span>
+        <a class="item" ng-if="root.current === false" ui-sref="file-manager.tree({path: '/', offset: 0})"><em>Allt</em></a> 
+        <span class="item" ng-if="root.current === true"><em>Allt</em></span> 
+        <fsnodes nodes="root.children"></fsnodes>
+      </li>
+    </ul>
   </div>
 
-  <pagination ng-if="images" offset="offset" limit="limit" change-function="movePage" items="images"></pagination>
+
+  <div class="col-md-9 main image-list" id="file-overview">
+    <pagination ng-if="images" offset="offset" limit="limit" change-function="movePage" items="images"></pagination>
+
+    <div ng-repeat="image in images">
+      <a ng-if="!image.expanded" ng-click="toggle_image($event, image)" class="img-block" ui-sref="file-manager.single({id: image.id})"> 
+        <div class="img-block-inner"><img src="{{ image.thumb_url }}" /></div>
+        <div class="img-block-text"><p>F#{{ image.id }} &mdash; {{ image.filename | truncate_filename:24 }}</p></div>
+      </a>
+      <div ng-if="image.expanded" ng-click="toggle_image($event, image)" class="img-expanded-block">
+        <div class="img-expanded-inner"> <img src="{{ image.large_url }}" /> </div>
+        <div class="img-expanded-attrs"> 
+          <table>
+            <tr ng-repeat="(key, value) in image">
+              <td>{{ key }}</td>
+              <td>{{ value }}</td>
+            </tr>
+          </table>
+        </div>
+        <hr />
+      </div>
+    </div>
+
+    <pagination ng-if="images" offset="offset" limit="limit" change-function="movePage" items="images"></pagination>
+  </div>
 </div>

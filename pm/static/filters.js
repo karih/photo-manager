@@ -20,9 +20,38 @@ app.filter('truncate_filename', function() {
 			var bf = Math.floor(len/2)-1;
 			var ef = Math.ceil(len/2)-2;
 
-			console.log(len, bf, ef);
-			
 			return str.substring(0,bf) + "..." + str.substring(str.length-ef);
 		}
 	}
 });
+
+app.filter('truncate_filepath', function() {
+	return function(str, len, filename) {
+		if (typeof(str) === "undefined") {
+			return str;
+		} else if (str.length - filename.length <= len) {
+			return str.substring(0, str.length-filename.length);
+		} else {
+			var start = str.length - filename.length - len;
+			return "..." + str.substring(start, str.length - filename.length);
+		}
+	}
+});
+
+app.filter('exposure', ['$filter', function($filter) {
+	return function(v) {
+		if (v < 1) {
+			v = 1 / v;
+			return "1/" + $filter('number')(v, 0);
+		} else {
+			return $filter('number')(v, 1);
+		}
+	}
+}]);
+
+app.filter('aperture', ['$filter', function($filter) {
+	return function(v) {
+		return "f/" + $filter('number')(v, 1);
+	}
+}]);
+

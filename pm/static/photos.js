@@ -1,5 +1,6 @@
+
 app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state', '$document', '$filter', function($scope, $http, $stateParams, $state, $document, $filter) {
-	console.log("PhotosOverviewCtrl(" + $stateParams + ")")
+	console.log("PhotosOverviewCtrl(", $stateParams, ")")
 
 	$scope.offset = $stateParams["offset"];
 	$scope.limit = $stateParams["limit"];
@@ -17,10 +18,10 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		if (event.keyCode == 39 && ($scope.offset + $scope.limit <= $scope.hits)) {
 			new_state["offset"] = $scope.offset + $scope.limit;
-			$state.go('photos', new_state);
+			$state.go('photos.list', new_state);
 		} else if (event.keyCode == 37) {
 			new_state["offset"] = Math.max(0, $scope.offset - $scope.limit);
-			$state.go('photos', new_state);
+			$state.go('photos.list', new_state);
 		}	
 	});
 	$scope.$on('$destroy', function() {
@@ -41,7 +42,7 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		new_state["offset"] = offset;
 		new_state["limit"] = limit;
-		return $state.href('photos', new_state);
+		return $state.href('photos.list', new_state);
 	}
 
 	$scope.filter_fun = function(filter) {
@@ -55,25 +56,47 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 			} else {
 				new_state[filter] = value; // select
 			}
-			$state.go("photos", new_state);
+			$state.go("photos.list", new_state);
 		}
 	}
 
-	$scope.apertureFormatter = function(v) { return "f/" + $filter('number')(v, 1); }
-	$scope.exposureFormatter = function(v) { 
-		if (v < 1) {
-			v = 1 / v;
-			return "1/" + $filter('number')(v, 0);
-		} else {
-			return $filter('number')(v, 1);
-		}
+	$scope.singleHref = function(photo) {
+		var new_state = JSON.parse(JSON.stringify($stateParams));
+		new_state.id = photo.id;
+		return $state.href("photos.details", new_state);
 	}
+
+	$scope.oneliner = function(photo) { return "P#" + photo.id };
+
+	$scope.apertureFormatter = function(v) { return $filter('aperture')(v); }
+	$scope.exposureFormatter = function(v) { return $filter('exposure')(v); }
 
 	this.fetch();
 }]);
 
-app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', function($scope, $http, $stateParams) {
-	console.log("PhotoCtrl(" + $stateParams["id"] + ")");	
+app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', '$filter', function($scope, $http, $stateParams, $filter) {
+	console.log("PhotoCtrl(", $stateParams, ")");	
+
+	$scope.properties = [ 
+		["aperture", "Aperture", $filter('aperture'), ],
+		["exposure", "Exposure", $filter('exposure'), ],
+		["date", "Date", function(v) { return v; }],
+		["focal_length", "Focal Length", function(v) { return v; }],
+		["focal_length_35", "Focal Length (35mm)", function(v) { return v; }],
+		["iso", "ISO", function(v) { return v; }],
+		["make", "Make", function(v) { return v; }],
+		["model", "Model", function(v) { return v; }],
+		["lens", "Lens", function(v) { return v; }],
+	];
+
+	console.log($scope.properties);
+	
+	$scope.changeFile = function(v) {
+		console.log("RASS");
+		$http.put('/api/photo/' + $stateParams["id"], {file_id: v}).success(function(data) {
+			$scope.photo = data.photo;
+		});
+	}
 
 	$http.get('/api/photo/' + $stateParams["id"]).success(function(data) {
 		$scope.photo = data.photo;

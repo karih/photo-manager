@@ -174,7 +174,7 @@ class Photo(Base):
     tags = relationship("Tag", secondary=tags_association_table, back_populates="photos")
 
     file_id = sa.Column(sa.Integer, sa.ForeignKey('files.id', use_alter=True, name="photos_file_id_fkey"), nullable=False)
-    file = relationship("ImageFile", back_populates="primaries", foreign_keys="Photo.file_id")
+    file = relationship("ImageFile", back_populates="primaries", foreign_keys="Photo.file_id", post_update=True)
 
     # normally copied from one of the files
     date = sa.Column(sa.DateTime, nullable=True)

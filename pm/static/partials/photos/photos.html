@@ -1,23 +1,15 @@
-<div class="col-md-3 sidebar">
-  <date-facet name="Date" years="facets.date_tree" filter="filter_fun('date')(value)"></date-facet>
-  <facet name="Aperture" options="facets.aperture" filter="filter_fun('aperture')(value)" formatter="apertureFormatter"></facet>
-  <facet name="Exposure" options="facets.exposure" filter="filter_fun('exposure')(value)" formatter="exposureFormatter"></facet>
-  <facet name="Focal Length (35mm)" options="facets.focal_length_35" filter="filter_fun('focal_length_35')(value)"></facet>
-  <facet name="ISO" options="facets.iso" filter="filter_fun('iso')(value)"></facet>
-  <facet name="Make" options="facets.make" filter="filter_fun('make')(value)"></facet>
-  <facet name="Lens" options="facets.lens" filter="filter_fun('lens')(value)"></facet>
-</div>
-
-
-<div class="col-md-9 main image-list" id="photos">
-  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" items="photos" hits="hits"></pagination>
-
-  <div ng-repeat="photo in photos">
-    <a class="img-block" ui-sref="photos.single({id: photo.id})"> 
-      <div class="img-block-inner"><img src="{{ photo.thumb_url }}" /></div>
-      <div class="img-block-text"><p>P#{{ photo.id }}</p></div>
-    </a>
+<div class="row" ui-view>
+  <div class="col-md-3 sidebar">
+    <date-facet name="Date" years="facets.date_tree" filter="filter_fun('date')(value)"></date-facet>
+    <facet name="Aperture" options="facets.aperture" filter="filter_fun('aperture')(value)" formatter="apertureFormatter"></facet>
+    <facet name="Exposure" options="facets.exposure" filter="filter_fun('exposure')(value)" formatter="exposureFormatter"></facet>
+    <facet name="Focal Length (35mm)" options="facets.focal_length_35" filter="filter_fun('focal_length_35')(value)"></facet>
+    <facet name="ISO" options="facets.iso" filter="filter_fun('iso')(value)"></facet>
+    <facet name="Make" options="facets.make" filter="filter_fun('make')(value)"></facet>
+    <facet name="Lens" options="facets.lens" filter="filter_fun('lens')(value)"></facet>
   </div>
 
-  <pagination ng-if="photos" offset="offset" limit="limit" change-function="movePage" items="photos" hits="hits"></pagination>
+  <div class="col-md-9 main image-list" id="photos">
+    <thumbnail-view photos="photos" offset="offset" limit="limit" hits="hits" switch-page="movePage" single-href="singleHref" oneliner="oneliner" ></thumbnail-view>
+  </div>
 </div>

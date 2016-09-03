@@ -7,9 +7,9 @@ app.controller('FileManagerOverviewCtrl', ['$scope', '$http', '$stateParams', '$
 
 	$document.bind('keydown', function(event, args) {
 		if (event.keyCode == 39) {
-			$state.go('file-manager.overview', {path: $scope.path, offset: $scope.images.length < $scope.limit ? $scope.offset : $scope.offset + $scope.limit, limit: $scope.limit});
+			$state.go('file-manager.tree', {path: $scope.path, offset: $scope.images.length < $scope.limit ? $scope.offset : $scope.offset + $scope.limit, limit: $scope.limit});
 		} else if (event.keyCode == 37) {
-			$state.go('file-manager.overview', {path: $scope.path, offset: Math.max(0, $scope.offset-$scope.limit), limit: $scope.limit});
+			$state.go('file-manager.tree', {path: $scope.path, offset: Math.max(0, $scope.offset-$scope.limit), limit: $scope.limit});
 		}	
 	});
 	$scope.$on('$destroy', function() {
@@ -44,7 +44,7 @@ app.controller('FileManagerOverviewCtrl', ['$scope', '$http', '$stateParams', '$
 	}
 
 	$scope.movePage = function(offset, limit) {
-		return $state.href('file-manager.overview', {path: $scope.path, offset: offset, limit: limit});
+		return $state.href('file-manager.tree', {path: $scope.path, offset: offset, limit: limit});
 	}
 
 	this.uiOnParamsChanged = function (changedParams, $transition$) {

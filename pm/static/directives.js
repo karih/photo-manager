@@ -12,7 +12,7 @@ app.directive('pagination', function() {
 		controller: function($scope) { 
 			var near=3;
 			var update_scope = function() {
-				console.log("Updating paginator, offset=", $scope.offset, ", limit=", $scope.limit, ", count=", $scope.items.length, ", hits=", $scope.hits);
+				//console.log("Updating paginator, offset=", $scope.offset, ", limit=", $scope.limit, ", count=", $scope.items.length, ", hits=", $scope.hits);
 				$scope.disableNext = angular.isDefined($scope.hits) ? ($scope.hits <= $scope.offset + $scope.limit) : ($scope.items.length < $scope.limit);
 				$scope.disablePrevious = ($scope.offset == 0);
 				$scope.previous_offset = Math.max(0, $scope.offset - $scope.limit);
@@ -47,6 +47,7 @@ app.directive('pagination', function() {
 				}
 			}
 
+			// XXX: This is probably a bit excessive..
 			$scope.$watch('hits', update_scope);
 			$scope.$watch('offset', update_scope);
 			$scope.$watch('limit', update_scope);
@@ -70,7 +71,6 @@ app.directive('facet', function() {
 			expanded: "=?"
 		},
 		controller: function($scope) {
-			console.log("Controller", $scope.formatter);
 			if (!angular.isDefined($scope.formatter)) { $scope.formatter = function(v) { return v; }; }
 			if (!angular.isDefined($scope.expanded)) { $scope.expanded = false; }
 			$scope.has_more = false;
@@ -117,13 +117,26 @@ app.directive('dateFacet', function() {
 			years: "=",
 			filter: "&"
 		},
-		controller: function($scope) {
-			console.log("DateFacetController", $scope);
-		},
 		templateUrl: "/static/partials/common/date_facet.html"
 	}
 });
 
-app.directive('thumbnail-view', function() {
-	return {}
+app.directive('thumbnailView', function() {
+	return {
+		restrict: "E",
+		replace: true,
+		scope: {
+			photos: "=",
+			offset: "=",
+			limit: "=",
+			hits: "=?",
+			switchPage: "=",
+			oneliner: "=",
+			singleHref: "="
+		},
+		controller: function($scope) {
+			console.log("ThumbnailViewController(", $scope, ")");
+		},
+		templateUrl: "/static/partials/common/photo-list.html"
+	}
 });

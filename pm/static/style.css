@@ -57,3 +57,5 @@ nav.pagination { width: 100%; }
 .facet-group span.indent { min-width: 14px; margin-right: 20px; background-color: black; }
 
 .list-group-item-xs { padding-top: 3px; padding-bottom: 3px; }
+
+div.photos div.photo-photo { padding: 5px; margin: 5px; }

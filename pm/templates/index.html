@@ -21,8 +21,8 @@
 
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li ui-sref-active="{ 'active': 'file-manager' }"><a ui-sref="file-manager.overview">Files</a></li>
-            <li ui-sref-active="{ 'active': 'photos' }"><a ui-sref="photos">Photos</a></li>
+            <li ui-sref-active="{ 'active': 'file-manager' }"><a ui-sref="file-manager.tree">Files</a></li>
+            <li ui-sref-active="{ 'active': 'photos' }"><a ui-sref="photos.list">Photos</a></li>
             <li><a ui-sref="publishing-manager-overview">Publishing Manager</a></li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Other Pages <span class="caret"></span></a>
@@ -37,9 +37,7 @@
       </div>
     </nav>
 
-    <div id="content" class="container-fluid">
-      <div ui-view class="row"></div>
-    </div>
+    <div id="content" class="container-fluid" ui-view> </div>
 
     <script src="{{ url_for('static', filename='js/angular/angular.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/angular-ui-router/release/angular-ui-router.min.js') }}"></script>

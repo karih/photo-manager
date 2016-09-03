@@ -21,8 +21,8 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				templateUrl: '/static/partials/file-manager-single.html',
 				controller: 'FileManagerSingleCtrl'
 			})
-			.state('file-manager.overview', {
-				url: '/overview{path:nonURIEncoded}?{offset:int}&{limit:int}',
+			.state('file-manager.tree', {
+				url: '/tree{path:nonURIEncoded}?{offset:int}&{limit:int}',
 				templateUrl: '/static/partials/file-manager-overview.html',
 				controller: 'FileManagerOverviewCtrl',
 				params: { 
@@ -32,7 +32,12 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				},
 			})
 			.state('photos', {
-				url: '/photos?{offset:int}&{limit:int}&date&aperture&exposure&focal_length&focal_length_35&iso&make&model&lens',
+				abstract: true,
+				url: "/photos",
+				template: "<ui-view />"
+			})
+			.state('photos.list', {
+				url: '?{offset:int}&{limit:int}&date&aperture&exposure&focal_length&focal_length_35&iso&make&model&lens',
 				templateUrl: '/static/partials/photos/photos.html',
 				controller: 'PhotosOverviewCtrl',
 				params: {
@@ -49,14 +54,16 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 					lens: {dynamic: true, value: null}
 				}
 			})
-			.state('photos.single', {
+			.state('photos.details', {
 				url: '/{id:int}',
-				templateUrl: '/static/partials/photos/photos.html',
-				controller: 'PhotoCtrl'
+				templateUrl: '/static/partials/photos/single.html',
+				controller: 'PhotoCtrl',
+				params: {
+					id: {dynamic: true, value: 0}
+				}
 			});
 
-
-		$urlRouterProvider.otherwise('/files/overview');
+		$urlRouterProvider.otherwise('/files/tree');
 
 		$locationProvider.html5Mode(true);
 	}]);
