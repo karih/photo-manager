@@ -9,35 +9,43 @@ from ..models import Photo
 
 @app.route('/api/photos')
 def photos():
-    filters = {}
-    if "aperture" in request.args:
-        filters["aperture"] = float(request.args["aperture"])
-    if "iso" in request.args:
-        filters["iso"] = int(request.args["iso"])
-    if "make" in request.args:
-        filters["make"] = request.args["make"]
-    if "lens" in request.args:
-        filters["lens"] = request.args["lens"]
-    if "focal_length_35" in request.args:
-        filters["focal_length_35"] = float(request.args["focal_length_35"])
-    if "date" in request.args:
+    def date_mapping(v):
         try:
-            filters["date_day"] = datetime.datetime.strptime(request.args["date"], "%Y-%m-%d")
+            return 'date_day', datetime.datetime.strptime(v, "%Y-%m-%d")
         except ValueError as e:
             try:
-                filters["date_month"] = datetime.datetime.strptime(request.args["date"], "%Y-%m")
+                return 'date_month', datetime.datetime.strptime(v, "%Y-%m")
             except ValueError as e:
-                filters["date_year"] = datetime.datetime.strptime(request.args["date"], "%Y")
+                return 'date_year', datetime.datetime.strptime(v, "%Y")
+
+    filters = {}
+    mappings = {
+        "aperture" : float,
+        "iso" : int,
+        "make" : str,
+        "lens" : str,
+        "focal_length_35" : float,
+        "exposure" : float,
+        "date" : date_mapping
+    }
+
+    for key, val in mappings.items():
+        if key in request.args:
+            out = val(request.args[key])
+            if isinstance(out, tuple):
+                filters[out[0]] = out[1]
+            else:
+                filters[key] = out
+
 
     offset = int(request.args.get("offset", 0))
     limit = int(request.args.get("limit", 20))
-    search = request.args.get("filter", None)
 
     if limit > 20:
         limit = 20
 
     order = request.args.get("order", "-date")
-
+    search = ""
     q = PhotoSearch(query=search, filters=filters).build_search()
     
     response = q.sort(order)[offset:offset+limit].execute()

@@ -42,7 +42,6 @@ ul.file-tree a.item, ul.file-tree span.item { padding-left: 4px; }
 
 /* FILE-OVERVIEW -> PAGINATION */
 nav.pagination { width: 100%; }
-ul.pager { margin: 0 10px; }
 
 /* FILE SINGLE */
 #file-single div.img-block { margin: 5px background-color: #EEE; }
@@ -56,3 +55,5 @@ ul.pager { margin: 0 10px; }
 
 
 .facet-group span.indent { min-width: 14px; margin-right: 20px; background-color: black; }
+
+.list-group-item-xs { padding-top: 3px; padding-bottom: 3px; }

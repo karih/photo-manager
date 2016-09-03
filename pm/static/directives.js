@@ -65,11 +65,44 @@ app.directive('facet', function() {
 		scope: { 
 			name: "@", 
 			options: "=",
-			filter: "&"
+			filter: "&",
+			formatter: "=?",
+			expanded: "=?"
 		},
 		controller: function($scope) {
-			//console.log("Controller", $scope.filter);
+			console.log("Controller", $scope.formatter);
+			if (!angular.isDefined($scope.formatter)) { $scope.formatter = function(v) { return v; }; }
+			if (!angular.isDefined($scope.expanded)) { $scope.expanded = false; }
+			$scope.has_more = false;
 
+			var item_count = 3;
+
+			var update_visible = function() {
+				if (angular.isDefined($scope.options) && $scope.options.length > item_count) {
+					$scope.has_more = true;
+				} else {
+					$scope.has_more = false;
+				}
+
+				$scope.visible_options = [];
+				angular.forEach($scope.options, function(val) {
+					if (val.selected || $scope.visible_options.length < item_count || $scope.expanded) {
+						$scope.visible_options.push(val);
+					}
+				});	
+
+				if ($scope.expanded || !$scope.has_more) {
+					$scope.visible_options.sort(function(a, b) { return a.value == b.value ? 0 : (a.value > b.value ? 1 : -1); });
+				}
+			}
+
+			$scope.toggle = function() {
+				$scope.expanded = !$scope.expanded;
+				update_visible();
+			}
+
+			$scope.$watch('options', update_visible);
+			
 		},
 		templateUrl: "/static/partials/common/facet.html"
 	}

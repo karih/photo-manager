@@ -1,4 +1,4 @@
-app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state', '$document', function($scope, $http, $stateParams, $state, $document) {
+app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state', '$document', '$filter', function($scope, $http, $stateParams, $state, $document, $filter) {
 	console.log("PhotosOverviewCtrl(" + $stateParams + ")")
 
 	$scope.offset = $stateParams["offset"];
@@ -56,6 +56,16 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 				new_state[filter] = value; // select
 			}
 			$state.go("photos", new_state);
+		}
+	}
+
+	$scope.apertureFormatter = function(v) { return "f/" + $filter('number')(v, 1); }
+	$scope.exposureFormatter = function(v) { 
+		if (v < 1) {
+			v = 1 / v;
+			return "1/" + $filter('number')(v, 0);
+		} else {
+			return $filter('number')(v, 1);
 		}
 	}
 

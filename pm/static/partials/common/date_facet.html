@@ -1,5 +1,5 @@
 <div class="facet-group">
-  <h3>{{ name }}</h3>
+  <h4>{{ name }}</h4>
   <ul class="list-group">
     <li ng-repeat-start="year in years" class="list-group-item" ng-class="{ active: year.selected }" ng-click="filter({value: year.value })">
       <span class="glyphicon" ng-class="{ 'glyphicon-minus': year.expanded, 'glyphicon-plus': !year.expanded }"></span>

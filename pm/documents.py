@@ -47,6 +47,7 @@ class PhotoSearch(esd.FacetedSearch):
 
     facets = {
         'aperture' : esd.TermsFacet(field="aperture", size=10000), #, order={"_term" : "asc"}),
+        'exposure' : esd.TermsFacet(field="exposure", size=10000), #, order={"_term" : "asc"}),
         'make' : esd.TermsFacet(field="make", size=10000),
         'lens' : esd.TermsFacet(field="lens", size=10000),
         'iso' : esd.TermsFacet(field="iso", size=10000),
