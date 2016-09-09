@@ -3,7 +3,7 @@ app.directive('pagination', function() {
 		restrict: "E",
 		replace: true,
 		scope: {
-			changePage: '=changeFunction',
+			switchPage: '=switchPage',
 			hits: '=?',
 			items: '=',
 			offset: '=',
@@ -31,9 +31,6 @@ app.directive('pagination', function() {
 					pgs.add(Math.min($scope.current_page + i, last_page));
 					pgs.add(Math.max($scope.current_page - i, 1));
 				}
-
-				//console.log(pgs);
-
 
 				$scope.pages = []	
 				if (angular.isDefined($scope.hits)) {

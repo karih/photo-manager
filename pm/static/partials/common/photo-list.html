@@ -1,5 +1,5 @@
 <div class="photo-list">
-  <pagination ng-if="photos" offset="offset" limit="limit" move-function="switchPage" items="photos" hits="hits"></pagination>
+  <pagination ng-if="photos" offset="offset" limit="limit" switch-page="switchPage" items="photos" hits="hits"></pagination>
 
   <div ng-repeat="photo in photos">
     <a class="img-block" ng-href="{{ singleHref(photo) }}">
@@ -8,5 +8,5 @@
     </a>
   </div>
 
-  <pagination ng-if="photos" offset="offset" limit="limit" move-function="switchPage" items="photos" hits="hits"></pagination>
+  <pagination ng-if="photos" offset="offset" limit="limit" switch-page="switchPage" items="photos" hits="hits"></pagination>
 </div>

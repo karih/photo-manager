@@ -50,7 +50,7 @@ class ImageFile(Base):
 
     # foreign keys
     photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id', use_alter=True, name="files_photo_id_fkey"), nullable=True)
-    photo = relationship("Photo", back_populates="files", foreign_keys="ImageFile.photo_id")
+    photo = relationship("Photo", back_populates="files", foreign_keys="ImageFile.photo_id", post_update=True)
     derivatives = relationship('PhotoDerivative', back_populates='file')
     primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
     
@@ -174,7 +174,7 @@ class Photo(Base):
     tags = relationship("Tag", secondary=tags_association_table, back_populates="photos")
 
     file_id = sa.Column(sa.Integer, sa.ForeignKey('files.id', use_alter=True, name="photos_file_id_fkey"), nullable=False)
-    file = relationship("ImageFile", back_populates="primaries", foreign_keys="Photo.file_id", post_update=True)
+    file = relationship("ImageFile", back_populates="primaries", foreign_keys="Photo.file_id")
 
     # normally copied from one of the files
     date = sa.Column(sa.DateTime, nullable=True)

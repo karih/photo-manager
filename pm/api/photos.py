@@ -60,7 +60,7 @@ def photo(id):
     if request.method == "PUT":
         assert "file_id" in request.get_json()
         im = [f for f in p.files if f.id == int(request.get_json().get("file_id"))][0]
-        p.file = im
+        p.file_id = im.id
         db_session.commit()
         return jsonify(photo=get_info(p))
     else:
