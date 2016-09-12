@@ -10,6 +10,9 @@ from . import app
 
 
 photos = esd.Index(app.config["ELASTICSEARCH_INDEX"])
+# So this allows bigger pagination in /photos, probably going past 10000/20 pages doesn't 
+# make a whole lot of sense, and this should be solved differently, but until that time..
+photos.settings(max_result_window=50000) 
 
 class ExtendedDateHistogramFacet(esd.DateHistogramFacet):
 	# Temporary until the elasticsearch-dsl library includes the 'year' range
