@@ -34,8 +34,9 @@ class PhotoDocument(esd.DocType):
     focal_length_35 = esd.Float()
     iso = esd.Integer()
     make = esd.String(index='not_analyzed')
-    model = esd.String(index='not_analyzed')
+    #model = esd.String(index='not_analyzed')
     lens = esd.String(index='not_analyzed')
+    path = esd.String(index='not_analyzed')
 
     file_id = esd.Integer()
 

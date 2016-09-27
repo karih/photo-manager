@@ -36,6 +36,8 @@ def find_and_add_files():
                     image = ImageFile.load(file)
                     db_session.add(image)
                     db_session.commit()
+                except ValueError as e:
+                    logging.error("Error processing file %s (ValueError: %s)", file, e)
                 except wand.exceptions.BlobError as e:
                     logging.error("Error processing file %s (BlobError: %s)", file, e)
                 except wand.exceptions.CorruptImageError as e:
