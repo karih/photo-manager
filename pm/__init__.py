@@ -12,6 +12,8 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from elasticsearch_dsl.connections import connections
 
+import redis as redispy
+
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", filename='flask.log', level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger().addHandler(logging.StreamHandler())
 
@@ -26,9 +28,9 @@ else:
 
 
 db_engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"], echo=False)
-db_session = scoped_session(sessionmaker(bind=db_engine))
+db = scoped_session(sessionmaker(bind=db_engine))
 Base = declarative_base()
-Base.query = db_session.query_property()
+Base.query = db.query_property()
 
 from . import models
 from . import views
@@ -44,4 +46,4 @@ def configure_proxy():
             app.config["USE_X_ACCEL"] = False
 
 connections.create_connection(hosts=app.config["ELASTICSEARCH_HOSTS"], timeout=20)
-
+redis = redispy.from_url(app.config["REDIS_URI"])

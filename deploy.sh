@@ -36,7 +36,7 @@ if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then
 fi
 
 # TODO: switch to git-archive
-tar -cj -f - pm manage.py  __init__.py ${add_files} | ssh $LOGIN tar -xj -f - -C $HOSTDIR
+tar -cj -f - pm manage.py ${add_files} | ssh $LOGIN tar -xj -f - -C $HOSTDIR
 
 if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then 
 	echo "Reinitializing python environment"

@@ -1,0 +1,45 @@
+<div class="facet-outer" ng-class="{ 'minimized' : state == 0, 'expanded' : state == 1, 'detailed' : state == 2 }">
+  <div class="panel facet" ng-class="{ 'panel-default' : !active, 'panel-primary' : active}">
+    <div class="panel-heading">
+      <strong>{{ title }}</strong> 
+      <em ng-show="active">(active)</em>
+      <span ng-show="state == 1" class="glyphicon glyphicon-menu-up" ng-click="state = 0;"> </span> 
+      <span ng-show="state == 0" class="glyphicon glyphicon-menu-down" ng-click="state = 1;"> </span>
+      <!--<span ng-show="state == 1" class="glyphicon glyphicon-resize-full" ng-click="state = 2;"> </span>-->
+      <span ng-show="state == 2" class="glyphicon glyphicon-resize-small" ng-click="state = 1;"> </span>
+
+      <span ng-show="active" class="glyphicon glyphicon-remove" ng-click="clear()"> </span>
+    </div>
+    <div class="panel-body" ng-if="state == 1">
+      <div class="form-group has-feedback" ng-class="{ 'has-error' : !validObj.valid, 'has-success' : validObj.valid }">
+        <input 
+          class="form-control" 
+          type="text" 
+          placeholder="Type model name.." 
+          ng-model="query" 
+          query-function="innerQueryFunction" 
+          valid="validObj.valid"
+          value="valueObj.value"
+          template='{{ "{{ item.value }\} <em>({{ item.count }\})</em>" }}'
+          typeahead 
+        />
+      </div>
+      <p class="help-block">Hit <tt>tab</tt> to get a list of options and to select option, with a valid option, hit <tt>enter</tt> to activate filter..</p>
+      <p>
+        <button class="btn" ng-class="{ 'btn-default' : '' != value, 'btn-primary' : '' == value }" ng-click="value == '' ? choose(null) : choose('')">
+          <strong>
+            <span ng-if="value == ''">Deselect</span>
+            <span ng-if="value != ''">Select</span> those without value
+          </strong> 
+          <em ng-if="null_candidates !== null">({{ null_candidates }})</em>
+        </button>
+      </p>
+    </div>
+    <div class="panel-body" ng-if="state == 2">
+      <ul>
+        <li ng-repeat="option in all_candidates"><button class="btn" ng-class="{ 'btn-default' : option.value != value, 'btn-primary' : option.value == value }" ng-click="choose(option.value)">{{option.value}} <em>({{ option.doc_count }})</em></button></li>
+        <li><button class="btn" ng-class="{ 'btn-default' : '' != value, 'btn-primary' : '' == value }" ng-click="choose('')"><strong>Results without value</strong> <em>({{ null_candidates }})</em></button></li>
+      </ul>  
+    </div>
+  </div>
+</div>

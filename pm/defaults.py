@@ -24,6 +24,11 @@ ELASTICSEARCH_INDEX = "photos"
 # PostgreSQL connection string
 SQLALCHEMY_DATABASE_URI = 'postgresql://user@localhost/dbname'
 
+# Redis connection string (see https://redis-py.readthedocs.io/en/latest/)
+#REDIS_URI = "redis://[:password]@localhost:6379/0"
+REDIS_URI = "redis://localhost:6379/0"
+
+
 # TEMP_DIR is where thumbnails (small and large) are stored.
 # This can grow to a decent size and probably should be preserved on reboot.
 # /var/tmp is chosen here, but this should probably be overwritten
@@ -42,3 +47,8 @@ SEARCH_EXCLUDE_DIRS = ['tmp', 'temp', 'backup'] # directory names that are omitt
 # SEARCH_EXCLUDE_ABSOLUTE_PATHS is a list of absolute paths under SEARCH_ROOT that should be omitted
 SEARCH_EXCLUDE_ABSOLUTE_PATHS = ['/do/not/look/in/here', ] 
 # Note: In addition to these, all (hidden) folders starting with . are omitted from search.
+
+
+# Photo sizes
+THUMB_SIZE = 256, 256
+LARGE_SIZE = 800, 800

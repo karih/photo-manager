@@ -5,13 +5,13 @@ import sys
 import logging
 
 from .. import models
-from .. import documents
+from ..search import documents
 
 def main(*args):
     """ Drops and rebuilds the elasticsearch index """
 
-    documents.photos.delete(ignore=404)
-    documents.photos.create(ignore=400)
+    documents.PhotoIndex.delete(ignore=404)
+    documents.PhotoIndex.create(ignore=400)
 
     rows = models.Photo.query.count()
     logging.info("Total photo objects: %d" % rows)
@@ -21,7 +21,9 @@ def main(*args):
         for photo in models.Photo.query.offset(offset).limit(1000):
             fields = {}
             for field in list(iter(documents.PhotoDocument._doc_type.mapping)):
-                fields[field] = getattr(photo, field)
+                if hasattr(photo, field):
+                    fields[field] = getattr(photo, field)
+
 
             make, model = photo.make, photo.model
             if make is None:
@@ -29,7 +31,7 @@ def main(*args):
             if model is None:
                 model = ""
 
-            newmake = ""
+            combined = ""
             extract_brands = ("Nikon", "Canon", "Kodak", "Olympus", "Pentax", "Minolta", "Casio", "Fujifilm", "Sony")
             for i in extract_brands:
                 if i.lower() in make.lower():
@@ -49,9 +51,12 @@ def main(*args):
             model = re.sub(u"digital camera$", "", model, flags=re.I).strip()
             model = re.sub(u"digital$", "", model, flags=re.I).strip()
 
-            newmake = ("%s %s" % (make, model)).strip()
+            combined = ("%s %s" % (make, model)).strip()
 
-            fields["make"] = None if len(newmake) < 1 else newmake
+            fields["model"] = None if len(combined) < 1 else combined
+            fields["model_ci"] = None if len(combined) < 1 else combined
+            fields["lens_ci"] = photo.lens
+            fields["photo_id"] = photo.id
             doc = documents.PhotoDocument(meta={'id' : photo.id}, **fields)
             doc.save()
 

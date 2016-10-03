@@ -1,15 +1,106 @@
-<div class="row" ui-view>
-  <div class="col-md-3 sidebar">
-    <date-facet name="Date" years="facets.date_tree" filter="filter_fun('date')(value)"></date-facet>
-    <facet name="Aperture" options="facets.aperture" filter="filter_fun('aperture')(value)" formatter="apertureFormatter"></facet>
-    <facet name="Exposure" options="facets.exposure" filter="filter_fun('exposure')(value)" formatter="exposureFormatter"></facet>
-    <facet name="Focal Length (35mm)" options="facets.focal_length_35" filter="filter_fun('focal_length_35')(value)"></facet>
-    <facet name="ISO" options="facets.iso" filter="filter_fun('iso')(value)"></facet>
-    <facet name="Make" options="facets.make" filter="filter_fun('make')(value)"></facet>
-    <facet name="Lens" options="facets.lens" filter="filter_fun('lens')(value)"></facet>
-  </div>
+<div class="row">
+  <div photo-list>
+    <!--<div class="header">
+      <button class="btn btn-default" ng-click="clearFilters()">Clear All Filters</button>
+      <button ng-show="!state.group" class="btn btn-default" ng-click="state.group = true">Group Photos</button>
+      <button ng-show="state.group" class="btn btn-default" ng-click="state.group = false">Expand Groups</button>
+    </div>-->
 
-  <div class="col-md-9 main image-list" id="photos">
-    <thumbnail-view photos="photos" offset="offset" limit="limit" hits="hits" switch-page="movePage" single-href="singleHref" oneliner="oneliner" ></thumbnail-view>
+    <term-facet 
+      id="facet-model"
+      class="facet"
+      title="Camera Model" 
+      query-function="facet_search('model')(query, callback)" 
+      value="state.model"
+      state="state.mv">
+    </term-facet>
+    
+    <term-facet 
+      id="facet-lens"
+      class="facet"
+      title="Lens" 
+      query-function="facet_search('lens')(query, callback)" 
+      value="state.lens"
+      state="state.lv">
+    </term-facet>
+
+    <dirname-facet 
+      id="facet-dirname"
+      class="facet"
+      title="File Directory" 
+      query-function="facet_search('dirname')(query, callback)" 
+      value="state.dirname"
+      state="state.dnv">
+    </dirname-facet>
+
+    <date-facet 
+      id="facet-date"
+      class="facet"
+      title="Date" 
+      query-function="facet_search('date')(query, callback)" 
+      value="state.date"
+      state="state.dv">
+    </date-facet>
+
+    <thumbnail-view 
+      id="photo-list"
+      photos="photos" 
+      offset="meta.offset" 
+      limit="meta.limit" 
+      hits="meta.hits" 
+      switch-page="movePage" 
+      single-href="singleHref" 
+      oneliner="oneliner">
+    </thumbnail-view>
+
+    <div class="photo-list">
+
+      <div class="options">
+        <div class="btn-group" role="group" ng-if="meta.sort_order">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Sort order
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li ng-class="{ active: 'asc' == meta.sort_order }"><a ng-href="{{ sortOrder('asc') }}">Ascending</a></li>
+            <li ng-class="{ active: 'desc' == meta.sort_order }"><a ng-href="{{ sortOrder('desc') }}">Descending</a></li>
+          </ul>
+        </div>
+
+        <div class="btn-group" role="group" ng-if="meta.sort_column">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Sort by column
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li ng-repeat="(key, val) in sort_columns" ng-class="{ active: key == meta.sort_column }"><a ng-href="{{ sortColumn(key) }}">{{ val }}</a></li>
+          </ul>
+        </div>
+
+        <pagination ng-if="photos" offset="meta.offset" limit="meta.limit" switch-page="switchPage" items="photos" hits="meta.hits" max-records="10000"></pagination>
+
+        <div class="btn-group" role="group" ng-if="meta.limit">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Photos per page
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li ng-repeat="val in limits" ng-class="{ active: val == meta.limit }"><a ng-href="{{ changeLimit(val) }}">{{ val }}</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="outer-block" ng-repeat="photo in photos">
+        <a class="img-block" ng-href="{{ singleHref(photo) }}">
+          <div class="img-block-inner"><img src="{{ photo.thumb_url }}" /></div>
+          <div class="img-block-text"><p>{{ oneliner(photo) }}</p></div>
+        </a>
+      </div>
+
+      <!--<pagination ng-if="photos" offset="meta.offset" limit="meta.limit" switch-page="switchPage" items="photos" hits="meta.hits" max-records="60"></pagination>-->
+
+    </div>
+
+    <br style="clear: both; " />
   </div>
 </div>

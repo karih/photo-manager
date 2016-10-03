@@ -9,7 +9,7 @@ import flask
 
 from wand.image import Image
 
-from . import app
+# none of these should depend on anything below pm/
 
 
 def extract_info(orig_filename):
@@ -65,11 +65,9 @@ def extract_info(orig_filename):
     
     with Image(filename=orig_filename) as im:
         logging.debug("Opened file %s", orig_filename)
-        stat = os.stat(orig_filename)
         m = im.metadata
         info["width"] = im.width
         info["height"] = im.height
-        info["ctime"] = datetime.datetime.fromtimestamp(stat.st_ctime)
         info["date"] = parse(m, "exif:DateTime", lambda x: datetime.datetime.strptime(x, "%Y:%m:%d %H:%M:%S"))
         info["aperture"] = first(
                 parse(m, "dng:Aperture", aperture_parse),
@@ -94,28 +92,12 @@ def extract_info(orig_filename):
 
         info["lens"] = first(parse(m, "dng:Lens"))
 
-        #logging.debug([x for x in m.items() if "focal" in x[0].lower()])
-        #logging.debug([x for x in m.items() if "lens" in x[0].lower()])
-
         logging.debug("Closing file %s", orig_filename)
 
     return info
 
-def create_thumbnails(filename, thumbnails):
-    with Image(filename=filename) as im:
-        for size, dest in thumbnails:
-            logging.debug("Creating thumbnail %s from filename %s", dest, filename)
-            with im.clone() as cl:
-                cl.format = 'jpeg'
-                cl.auto_orient()
-                cl.resize(*resize_dimensions((cl.width, cl.height), size))
-                cl.save(filename=dest)
 
-def resize_dimensions(orig, outer):
-    scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
-    return round(orig[0]*scaling), round(orig[1]*scaling)
-
-def send_file(f, **kwargs):
+def send_file(app, f, **kwargs):
     def xaccel(p):
         r = flask.Response("")
         r.headers["X-Accel-Redirect"] = p
@@ -130,4 +112,8 @@ def send_file(f, **kwargs):
         return xaccel(os.path.join('/internal/root', f[len(app.config["SEARCH_ROOT"])+1:]))
     else:
         return flask.send_file(f, **kwargs)
+
+def resize_dimensions(orig, outer):
+    scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
+    return round(orig[0]*scaling), round(orig[1]*scaling)
 

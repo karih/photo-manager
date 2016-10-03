@@ -21,7 +21,7 @@
 
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li ui-sref-active="{ 'active': 'file-manager' }"><a ui-sref="file-manager.tree">Files</a></li>
+            <!--<li ui-sref-active="{ 'active': 'file-manager' }"><a ui-sref="file-manager.tree">Files</a></li>-->
             <li ui-sref-active="{ 'active': 'photos' }"><a ui-sref="photos.list">Photos</a></li>
             <li><a ui-sref="publishing-manager-overview">Publishing Manager</a></li>
             <li class="dropdown">
@@ -37,7 +37,7 @@
       </div>
     </nav>
 
-    <div id="content" class="container-fluid" ui-view> </div>
+    <div id="content" class="container-fluid" ui-view></div>
 
     <script src="{{ url_for('static', filename='js/angular/angular.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/angular-ui-router/release/angular-ui-router.min.js') }}"></script>
@@ -47,10 +47,11 @@
 
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='main.controllers.js') }}"></script>
-    <script src="{{ url_for('static', filename='file-manager.js') }}"></script>
     <script src="{{ url_for('static', filename='photos.js') }}"></script>
     <script src="{{ url_for('static', filename='filters.js') }}"></script>
     <script src="{{ url_for('static', filename='directives.js') }}"></script>
+    <script src="{{ url_for('static', filename='facets.js') }}"></script>
+    <script src="{{ url_for('static', filename='filesystem-directives.js') }}"></script>
 
   </body>
 </html>

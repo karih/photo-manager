@@ -5,7 +5,7 @@ import pm.commands as cmd
 
 if __name__ == "__main__":
 
-    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.DEBUG)
 
     commands = [c for c in cmd.__all__ if not c.startswith("_")]
 

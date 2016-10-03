@@ -1,25 +1,21 @@
-<nav class="pagination-nav">
-  <!--<pre> {{ offset }} {{ limit }} {{ count }} {{ hits }} {{ disablePrevious }} {{ disableNext }} {{ page }} {{ pages }}</pre>-->
-
-  <ul ng-if="pages.length > 0" class="pagination">
-    <li class="previous" ng-class="{ disabled: disablePrevious }">
-      <a ng-href="{{ disablePrevious ? '' : switchPage(previous_offset, limit) }}">&laquo;</a>
-    </li>
-    <li ng-repeat="page in pages" ng-class="{ active: page.current, disabled: !page.seq }">
-      <a ng-if="page.seq" ng-href="{{ switchPage(page.offset, limit) }}">{{ page.page }}</a>
+<div class="pagination">
+  <div class="btn-group" role="group" ng-if="pages.length > 0">
+    <button type="button" class="btn btn-default previous" ng-class="{ disabled: disablePrevious }" ng-disabled="disablePrevious" ng-click="switchPage(previous_offset, limit)">&laquo;</button>
+    <button ng-repeat="page in pages" class="btn btn-default " ng-class="{ active: page.current, disabled: (!page.seq || page.disabled) }" ng-click="switchPage(page.offset, limit)" ng-disabled="page.disabled">
+      <span ng-if="page.seq">{{ page.page }}</span>
       <span ng-if="!page.seq">...</span>
+    </button>
+    <button type="button" class="btn btn-default next" ng-class="{ disabled: disableNext }" ng-disabled="disableNext" ng-click="switchPage(next_offset, limit)">&raquo;</button>
     </li>
-    <li class="next" ng-class="{ disabled: disableNext }">
-      <a ng-href="{{ disableNext ? '' : switchPage(next_offset, limit) }}">&raquo;</a>
-    </li>
-  </ul>
-
-  <ul ng-if="pages.length == 0" class="pager">
-    <li ng-class="{ disabled: disablePrevious }">
-      <a ng-href="{{ disablePrevious ? '' : switchPage(previous_offset, limit) }}"><span aria-hidden="true">&larr;</span> Previous Page</a>
-    </li>
-    <li ng-class="{ disabled: disableNext }">
-      <a ng-href="{{ disableNext ? '' : switchPage(next_offset, limit) }}">Next Page <span aria-hidden="true">&rarr;</span></a>
-    </li>
-  </ul>
-</nav>
+    <!--
+    <ul ng-if="pages.length == 0" class="pager">
+      <li ng-class="{ disabled: disablePrevious }">
+        <a ng-href="{{ disablePrevious ? '' : switchPage(previous_offset, limit) }}"><span aria-hidden="true">&larr;</span> Previous Page</a>
+      </li>
+      <li ng-class="{ disabled: disableNext }">
+        <a ng-href="{{ disableNext ? '' : switchPage(next_offset, limit) }}">Next Page <span aria-hidden="true">&rarr;</span></a>
+      </li>
+    </ul>
+    -->
+  </div>
+</div>

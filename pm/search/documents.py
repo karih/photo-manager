@@ -6,13 +6,13 @@ from six import iteritems, itervalues
 import elasticsearch_dsl as esd
 
 
-from . import app
+from .. import app
 
 
-photos = esd.Index(app.config["ELASTICSEARCH_INDEX"])
+PhotoIndex = esd.Index(app.config["ELASTICSEARCH_INDEX"])
 # So this allows bigger pagination in /photos, probably going past 10000/20 pages doesn't 
 # make a whole lot of sense, and this should be solved differently, but until that time..
-photos.settings(max_result_window=50000) 
+PhotoIndex.settings(max_result_window=500000) 
 
 class ExtendedDateHistogramFacet(esd.DateHistogramFacet):
 	# Temporary until the elasticsearch-dsl library includes the 'year' range
@@ -24,41 +24,57 @@ class ExtendedDateHistogramFacet(esd.DateHistogramFacet):
         'hour': lambda d: d+timedelta(hours=1),
     }
 
-@photos.doc_type
+@PhotoIndex.doc_type
 class PhotoDocument(esd.DocType):
-
     date = esd.Date()
     aperture = esd.Float()
     exposure = esd.Float()
     focal_length = esd.Float()
     focal_length_35 = esd.Float()
     iso = esd.Integer()
-    make = esd.String(index='not_analyzed')
-    #model = esd.String(index='not_analyzed')
+    size = esd.Integer()
+    model = esd.String(index='not_analyzed') #analyzer=esd.analyzer('keyword', tokenizer="keyword", filter=['lowercase', ]))
+    model_ci = esd.String(analyzer=esd.analyzer('keyword', tokenizer="keyword", filter=['lowercase', ]))
     lens = esd.String(index='not_analyzed')
+    lens_ci = esd.String(analyzer=esd.analyzer('keyword', tokenizer="keyword", filter=['lowercase', ]))
     path = esd.String(index='not_analyzed')
-
-    file_id = esd.Integer()
+    dirname = esd.String(index='not_analyzed')
+    basename = esd.String(index='not_analyzed')
 
     def extended_dict(self):
         dct = self.to_dict()
         dct["id"] = self.meta.id
         return dct
 
+@PhotoIndex.doc_type
+class GroupDocument(esd.DocType):
+    date = esd.Date()
+    aperture = esd.Float()
+    exposure = esd.Float()
+    focal_length = esd.Float()
+    focal_length_35 = esd.Float()
+    iso = esd.Integer()
+    model = esd.String(index='not_analyzed') #analyzer=esd.analyzer('keyword', tokenizer="keyword", filter=['lowercase', ]))
+    lens = esd.String(index='not_analyzed')
+    path = esd.String(index='not_analyzed')
+    dirname = esd.String(index='not_analyzed')
+    basename = esd.String(index='not_analyzed')
+
 
 class PhotoSearch(esd.FacetedSearch):
     doc_types = [PhotoDocument, ]
 
     facets = {
-        'aperture' : esd.TermsFacet(field="aperture", size=10000), #, order={"_term" : "asc"}),
-        'exposure' : esd.TermsFacet(field="exposure", size=10000), #, order={"_term" : "asc"}),
-        'make' : esd.TermsFacet(field="make", size=10000),
-        'lens' : esd.TermsFacet(field="lens", size=10000),
-        'iso' : esd.TermsFacet(field="iso", size=10000),
-        'focal_length_35' : esd.HistogramFacet(field="focal_length_35", interval=10, min_doc_count=1),
-        'date_day'   : ExtendedDateHistogramFacet(field='date', min_doc_count=1, interval='day'),
-        'date_month' : ExtendedDateHistogramFacet(field='date', min_doc_count=1, interval='month'),
-        'date_year'  : ExtendedDateHistogramFacet(field='date', min_doc_count=1, interval='year')
+        'aperture' : esd.TermsFacet(field="aperture"), #, order={"_term" : "asc"}),
+        'exposure' : esd.TermsFacet(field="exposure"), #, order={"_term" : "asc"}),
+        'model' : esd.TermsFacet(field="model"),
+        'lens' : esd.TermsFacet(field="lens"),
+        'iso' : esd.TermsFacet(field="iso"),
+        'focal_length_35' : esd.HistogramFacet(field="focal_length_35", interval=10),
+        'dirname' : esd.TermsFacet(field="dirname"),
+        'date_day'   : ExtendedDateHistogramFacet(field='date', interval='day'),
+        'date_month' : ExtendedDateHistogramFacet(field='date', interval='month'),
+        'date_year'  : ExtendedDateHistogramFacet(field='date', interval='year')
     }
 
     def aggregate(self, search):

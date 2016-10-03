@@ -2,9 +2,15 @@
 from . import run
 from . import scan
 from . import resetdb
-from . import assignphoto
+from . import group
 from . import reindex
-from . import debug
-from . import guessphotoinfo
+from . import build_cache
 
-__all__ = ['run', 'resetdb', 'scan', 'assignphoto', 'reindex', 'guessphotoinfo', 'debug']
+commands = ['run', 'resetdb', 'scan', 'group', 'reindex', 'build_cache']
+try:
+    from . import debug
+    commands.append('debug')
+except ImportError:
+    pass
+
+__all__ = commands

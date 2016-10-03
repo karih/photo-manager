@@ -5,7 +5,7 @@
   <span ng-if="node.collapsed === null" class='glyphicon glyphicon-folder-open'>
     <span class="border"></span>
   </span>
-  <a class="item" ng-if="node.current === false" ui-sref='file-manager.tree({path: node.path, offset: 0})'>{{ node.name }}</a> 
-  <span class="item" ng-if="node.current === true">{{ node.name }}</span>
-  <fsnodes ng-show='node' nodes='node.children'></fsnodes>
+  <a class="item" href="" ng-show="node.current !== true" ng-click="selectFunction(node.path)" ><tt>{{ node.name }}</tt></a>
+  <span class="item" ng-show="node.current === true"><tt>{{ node.name }}</tt></span>
+  <fsnodes ng-show='node' nodes='node.children' select-function="selectFunction"></fsnodes>
 </li>

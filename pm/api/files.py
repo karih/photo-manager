@@ -1,8 +1,10 @@
+import json
+import logging
 import os.path
 
 from flask import jsonify, url_for, request
-from .. import app
-from ..models import ImageFile
+import pm 
+from ..models import File, Photo, Group
 
 def image_dict(image):
     dct = image.dct()
@@ -11,9 +13,10 @@ def image_dict(image):
     dct["large_url"] = url_for('image_file', id=image.id, size="large")
     return dct
 
-@app.route('/api/files')
+@pm.app.route('/api/files')
 def files():
     """ Returns ImageFile objects after filtering, offsetting and limiting """
+    # TODO: Move to elasticsearch
 
     prefix = request.args.get("filter", None)
     offset = int(request.args.get("offset", 0))
@@ -31,28 +34,28 @@ def files():
         d["thumb_url"] = url_for('image_file', id=image.id, size="thumb")
         d["filename"] = image.basename
         d["id"] = image.id
-        d["date"] = image.date
+        d["date"] = image.photo.date
         return d
 
 
-    query = ImageFile.query
+    query = File.query.filter(File.deleted == False).filter(File.photo != None)
     if prefix is not None:
-        query = query.filter(ImageFile.path.like('%s%%' % prefix))
+        query = query.filter(File.path.like('%s%%' % prefix))
 
-    query = query.order_by(ImageFile.path)
+    query = query.order_by(File.path)
     query = query.offset(offset).limit(limit)
 
     return jsonify(images=[dct(i) for i in query])
 
-@app.route('/api/file/<int:id>', methods=['GET'])
+@pm.app.route('/api/file/<int:id>', methods=['GET'])
 def file(id):
     """ Returns information dict() about ImageFile """
 
-    image = ImageFile.query.get(id)
+    image = Photo.query.get(id)
     return jsonify(image=image_dict(image))
 
 
-@app.route('/api/filesystem', methods=['GET'])
+@pm.app.route('/api/filesystem', methods=['GET'])
 def filesystem():
     """ 
         A very poor way of creating a json object describing the 
@@ -61,22 +64,29 @@ def filesystem():
         Should at least be cached or something.., querying all 
         imagefile objects is not a good idea.
     """
-    root = {}
 
-    def unfold(p):
-        segments = p.split("/")[1:] # exclude filename
-        current = root
-        while len(segments) > 0:
-            if segments[0] not in current:
-                current[segments[0]] = {}
+    if not pm.redis.exists("cache.fstree"):
+        logging.info("Building fstree")
+        root = {}
 
-            current = current[segments.pop(0)]
+        def unfold(p):
+            segments = p.split("/")[1:] # exclude filename
+            current = root
+            while len(segments) > 0:
+                if segments[0] not in current:
+                    current[segments[0]] = {}
 
-    files = ImageFile.query.all()
-    paths = [os.path.split(f.path)[0] for f in files]
+                current = current[segments.pop(0)]
 
-    for path in paths:
-        unfold(path)
+        files = File.query.filter(File.deleted==False).filter(File.photo != None).all()
+        paths = [os.path.split(f.path)[0] for f in files]
+
+        for path in paths:
+            unfold(path)
+        
+        pm.redis.set('cache.fstree', json.dumps(root).encode('utf-8')) 
+    else:
+        logging.info("Loading fstree from cache")
+        root = json.loads(pm.redis.get("cache.fstree").decode('utf-8'))
 
     return jsonify(filesystem=root)
-

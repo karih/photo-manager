@@ -4,7 +4,7 @@ This is an attempt at (self-hosted) browser based photo manager software.
 
 This is designed by (and for) people with a certain distaste for cloud based photo services and external hard drives, allowing you to store your photo collection on your own server, while using this site to browse, manage, process and publish your photos.
 
-Server-side we use PostgreSQL and Elasticsearch to store data and Python3/Flask for web programming, while the front-end is built on AngularJS and Bootstrap.
+Server-side we use PostgreSQL, Elasticsearch and Redis to store data and Python3/Flask for web programming, while the front-end is built on AngularJS and Bootstrap.
 
 What currently works:
 
@@ -26,6 +26,7 @@ Besides Python3 and the libraries specified in ``requirements.pip`` this softwar
 
 * PostgreSQL
 * Elasticsearch
+* Redis
 * ImageMagick
 * UFRaw (https://en.wikipedia.org/wiki/UFRaw) for raw photo processing.
 
@@ -53,8 +54,7 @@ After installing the software dependencies listed above:
 5. Scan for photos and index (probably some of these will be combined)::
 
     python manage.py scan # scans for photos
-    python manage.py assignphoto # groups image files into photo objects
-    python manage.py guessphotoinfo # extracts photo information from files
+    python manage.py group # makes photo groups
     python manage.py reindex # index library with elasticsearch
 
 6. Run development server::
