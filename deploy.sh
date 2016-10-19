@@ -36,6 +36,8 @@ if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then
 fi
 
 # TODO: switch to git-archive
+ssh $LOGIN "find ${HOSTDIR}/pm | grep py$ | xargs rm"
+ssh $LOGIN "find ${HOSTDIR}/pm | grep pyc$ | xargs rm"
 tar -cj -f - pm manage.py ${add_files} | ssh $LOGIN tar -xj -f - -C $HOSTDIR
 
 if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then 

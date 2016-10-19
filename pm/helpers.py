@@ -68,6 +68,9 @@ def extract_info(orig_filename):
         m = im.metadata
         info["width"] = im.width
         info["height"] = im.height
+        if im.width < 1 or im.height < 1:
+            raise ValueError("Could not read image object (non-positive dimensions)")
+
         info["date"] = parse(m, "exif:DateTime", lambda x: datetime.datetime.strptime(x, "%Y:%m:%d %H:%M:%S"))
         info["aperture"] = first(
                 parse(m, "dng:Aperture", aperture_parse),

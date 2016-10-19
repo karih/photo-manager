@@ -98,6 +98,7 @@ class Photo(Base):
     # was any of the information manually changed
     changed = sa.Column(sa.DateTime, nullable=True)
     hidden = sa.Column(sa.Boolean, nullable=False, default=False)
+    deleted = sa.Column(sa.Boolean, nullable=False, default=False)
 
     # foreign keys
     files = relationship("File", back_populates="photo")
@@ -131,7 +132,7 @@ class Photo(Base):
 
     @property
     def path(self):
-        return [f.path for f in self.files]
+        return [f.path for f in self.files if f.deleted is False]
 
     @property
     def basename(self):

@@ -1,84 +1,138 @@
 import os
 import os.path
 import logging
+import warnings
 import datetime
 import hashlib
+
 
 import wand
 
 from . import app, db, helpers, models
 
 
-def scan_tree(make_thumbnails=False):
-    for file_path in search_for_images(app.config["SEARCH_ROOT"]):
-        processed = 0
-        skipped = 0
-        failed = 0
+def create_photo_thumbnails(photo):
+    if not os.path.exists(photo.path_large) or not os.path.exists(photo.path_thumb):
+        logging.debug("Creating thumbnails")
+        thumbs = [(app.config["LARGE_SIZE"], photo.path_large), (app.config["THUMB_SIZE"], photo.path_thumb)]
 
-        try:
-            if models.File.query.filter(models.File.path == file_path).count() < 1:
-                logging.info("Processing %s", file_path)
-                stat = os.stat(file_path)
-                file = models.File(path=file_path, ctime=datetime.datetime.fromtimestamp(stat.st_ctime), deleted=False)
-                try:
+        create_thumbnails(photo.path[0], thumbs)
 
-                    with open(file_path, 'rb') as f:
-                        m = hashlib.sha512()
-                        m.update(f.read())
-                        hash = m.hexdigest()
+        if app.config["SAVE_MASK"] is not None:
+            os.chmod(photo.path_large, app.config["SAVE_MASK"])
+            os.chmod(photo.path_thumb, app.config["SAVE_MASK"])
+        if app.config["SAVE_GROUP"] is not None:
+            os.chown(photo.path_large, -1, app.config["SAVE_GROUP"])
+            os.chown(photo.path_thumb, -1, app.config["SAVE_GROUP"])
+    else:
+        pass
+        #logging.debug("Thumbnails exist")
 
-                    photos = models.Photo.query.filter(models.Photo.hash == hash).all()
-                    if len(photos) > 0:
-                        photo = photos[0]
-                    else:
-                        size = os.path.getsize(file_path)
-                        extension = os.path.splitext(file_path)[1][1:]
+def check_if_valid_photo(file):
+    try:
+        helpers.extract_info(file.path)
+        return True
+    except ValueError as e:
+        return False
 
-                        info = helpers.extract_info(file_path)
 
-                        photo = models.Photo(
-                            size=size, 
-                            hash=hash, 
-                            format=models.Photo.extension_to_format_key(extension),
-                            **info
-                        )
-                        
+def check_for_deletion(photo):
+    has_files = False
+    for file in photo.files:
+        if os.path.exists(file.path):
+            has_files = True
+        else:
+            logging.debug("Marking file %s deleted", file.path)
+            file.deleted = True
 
-                        db.add(photo)
+    if not has_files:
+        logging.debug("Marking photo %d deleted", photo.id)
+        photo.deleted = True
+    
 
-                        if make_thumbnails and (not os.path.exists(photo.path_large) or not os.path.exists(photo.path_thumb)):
-                            thumbs = [(app.config["LARGE_SIZE"], photo.path_large), (app.config["THUMB_SIZE"], photo.path_thumb)]
-
-                            create_thumbnails(file_path, thumbs)
-
-                            if app.config["SAVE_MASK"] is not None:
-                                os.chmod(photo.path_large, app.config["SAVE_MASK"])
-                                os.chmod(photo.path_thumb, app.config["SAVE_MASK"])
-                            if app.config["SAVE_GROUP"] is not None:
-                                os.chown(photo.path_large, -1, app.config["SAVE_GROUP"])
-                                os.chown(photo.path_thumb, -1, app.config["SAVE_GROUP"])
-
-                    file.photo = photo
-                    
-                except ValueError as e:
-                    logging.error("Error processing file %s (ValueError: %s)", file, e)
-                    file.error = str(e)
-                except wand.exceptions.BlobError as e:
-                    logging.error("Error processing file %s (BlobError: %s)", file, e)
-                    file.error = str(e)
-                except wand.exceptions.CorruptImageError as e:
-                    logging.error("Error processing file %s (CorruptImageError: %s)", file, e)
-                    file.error = str(e)
-                except OSError as e:
-                    logging.error("Error processing file %s (OSError: %s)", file, e)
-                    file.error = str(e)
-                finally:
-                    db.add(file)
-                    db.commit()
+def scan_file(file_path, force=False, make_thumbnails=True):
+    logging.debug("Scanning %s", file_path.encode('utf-8', 'replace').decode('utf-8'))
+    try:
+        file_exists = models.File.query.filter(models.File.path == file_path).count() == 1
+        if not file_exists or force:
+            logging.info("Processing %s", file_path)
+            if file_exists:
+                file = models.File.query.filter(models.File.path == file_path)[0]
             else:
-                logging.debug("Skipping %s (already in database)", file_path)
-        except UnicodeEncodeError as e:
-            logging.error("Error processing file %s (UnicodeEncodeError: %s)", file_path.encode('utf-8', 'replace').decode('utf-8'), e)
+                file = models.File(path=file_path)
+
+            try:
+                if not file_exists or force:
+                    stat = os.stat(file_path)
+                    file.ctime = datetime.datetime.fromtimestamp(stat.st_ctime)
+                    file.deleted = False
+
+                with open(file_path, 'rb') as f:
+                    m = hashlib.sha512()
+                    m.update(f.read())
+                    hash = m.hexdigest()
+
+            except FileNotFoundError as e:
+                if file_exists and not file.deleted:
+                    file.deleted = True
+                    warning.warn("File %s no longer exists", file_path)
+
+            try:
+                photo = file.photo
+                if photo is None:
+                    try:
+                        photo = models.Photo.query.filter(models.Photo.hash == hash).all()[0]
+                    except IndexError as e:
+                        pass
+
+                if photo is None:
+                    photo_exists = False
+                    photo = models.Photo(hash=hash)
+                else:
+                    photo_exists = True
+
+                if not photo_exists or force:
+                    photo.size = os.path.getsize(file_path)
+                    photo.extension = os.path.splitext(file_path)[1][1:]
+                    photo.format = models.Photo.extension_to_format_key(photo.extension)
+
+                    for key, val in helpers.extract_info(file_path).items():
+                        setattr(photo, key, val)
+
+                    db.add(photo)
+
+                file.photo = photo
+
+                if make_thumbnails:
+                    create_photo_thumbnails(photo)
+
+
+                
+            except ValueError as e:
+                logging.error("Error processing file %s (ValueError: %s)", file, e)
+                file.error = str(e)
+            except wand.exceptions.BlobError as e:
+                logging.error("Error processing file %s (BlobError: %s)", file, e)
+                file.error = str(e)
+            except wand.exceptions.CorruptImageError as e:
+                logging.error("Error processing file %s (CorruptImageError: %s)", file, e)
+                file.error = str(e)
+            except OSError as e:
+                logging.error("Error processing file %s (OSError: %s)", file, e)
+                file.error = str(e)
+            finally:
+                db.add(file)
+                db.commit()
+        else:
+            logging.debug("Skipping %s (already in database)", file_path)
+    except UnicodeEncodeError as e:
+        logging.error("Error processing file %s (UnicodeEncodeError: %s)", file_path.encode('utf-8', 'replace').decode('utf-8'), e)
+
+def scan_tree(**kwargs):
+    kwargs.setdefault('force', False)
+    kwargs.setdefault('make_thumbnails', True)
+    for file_path in search_for_images(app.config["SEARCH_ROOT"]):
+        scan_file(file_path, **kwargs)
 
 
 def search_for_images(root_path):
