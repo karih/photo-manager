@@ -24,42 +24,48 @@ def main(*args):
 
     for photo in helpers.get_photo_batch_iterator():
         fields = {}
-        for field in list(iter(documents.PhotoDocument._doc_type.mapping)):
-            if hasattr(photo, field):
-                fields[field] = getattr(photo, field)
+        if photo.deleted:
+            try:
+                documents.PhotoDocument.get(id=photo.id).delete()
+            except es.NotFoundError as e:
+                pass
+        else:
+            for field in list(iter(documents.PhotoDocument._doc_type.mapping)):
+                if hasattr(photo, field):
+                    fields[field] = getattr(photo, field)
 
-        make, model = photo.make, photo.model
-        if make is None:
-            make = ""
-        if model is None:
-            model = ""
+            make, model = photo.make, photo.model
+            if make is None:
+                make = ""
+            if model is None:
+                model = ""
 
-        combined = ""
-        extract_brands = ("Nikon", "Canon", "Kodak", "Olympus", "Pentax", "Minolta", "Casio", "Fujifilm", "Sony")
-        for i in extract_brands:
-            if i.lower() in make.lower():
-                make = i
+            combined = ""
+            extract_brands = ("Nikon", "Canon", "Kodak", "Olympus", "Pentax", "Minolta", "Casio", "Fujifilm", "Sony")
+            for i in extract_brands:
+                if i.lower() in make.lower():
+                    make = i
 
-        if "hewlett" in make.lower():
-            make = "HP"
+            if "hewlett" in make.lower():
+                make = "HP"
 
-        #if len(make) > 1:
-        #    make = make[0].upper() + make[1:].lower()
+            #if len(make) > 1:
+            #    make = make[0].upper() + make[1:].lower()
 
-        if model.lower().startswith(make.lower()):
-            model = model[len(make):].strip()
+            if model.lower().startswith(make.lower()):
+                model = model[len(make):].strip()
 
 
-        model = re.sub(u"zoom digital camera", "", model, flags=re.I).strip()
-        model = re.sub(u"digital camera$", "", model, flags=re.I).strip()
-        model = re.sub(u"digital$", "", model, flags=re.I).strip()
+            model = re.sub(u"zoom digital camera", "", model, flags=re.I).strip()
+            model = re.sub(u"digital camera$", "", model, flags=re.I).strip()
+            model = re.sub(u"digital$", "", model, flags=re.I).strip()
 
-        combined = ("%s %s" % (make, model)).strip()
+            combined = ("%s %s" % (make, model)).strip()
 
-        fields["model"] = None if len(combined) < 1 else combined
-        fields["model_ci"] = None if len(combined) < 1 else combined
-        fields["lens_ci"] = photo.lens
-        fields["photo_id"] = photo.id
-        doc = documents.PhotoDocument(meta={'id' : photo.id}, **fields)
-        doc.save()
+            fields["model"] = None if len(combined) < 1 else combined
+            fields["model_ci"] = None if len(combined) < 1 else combined
+            fields["lens_ci"] = photo.lens
+            fields["photo_id"] = photo.id
+            doc = documents.PhotoDocument(meta={'id' : photo.id}, **fields)
+            doc.save()
 
