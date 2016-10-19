@@ -257,7 +257,7 @@ def photos():
 
         try:
             offset = int(request.args.get("offset"))
-            if offset > (1000 - limit) or offset < 0:
+            if offset > (10000 - limit) or offset < 0:
                 offset = 0
         except (TypeError, ValueError):
             offset = 0

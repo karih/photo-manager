@@ -11,12 +11,13 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	$scope.limits = [10, 20, 50, 100];
 
 	$scope.$on('stateChangeSuccess', function(event) {
-		$scope.fetch();
+		$scope.fetch(); // TODO check if custom event can be replaced by $transitions 
 	});
+
 
 	$scope.fetch = function() {
 		$http.get('/api/photos', {params: $stateParams} ).success(function(data) {
-			console.log("SCOPE UPDTATED", $stateParams);
+			//console.log("SCOPE UPDTATED", $stateParams);
 			$scope.photos = data.photos;
 			$scope.meta = {
 				offset: data.offset, 
@@ -46,7 +47,7 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	});
 
 	this.uiOnParamsChanged = function (changedParams, $transition$) {
-		console.log("STATE HAS JUST CHANGED", changedParams);
+		//console.log("STATE HAS JUST CHANGED", changedParams);
 		/* state called again with changed parameters */
 
 		angular.forEach(changedParams, function(value, key) {
@@ -59,7 +60,7 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	};
 
 	$scope.$watch('state', function(new_val, old_val) {
-		console.log('initiating state change due to changes in $scope.state', new_val, old_val);
+		//console.log('initiating state change due to changes in $scope.state', new_val, old_val);
 		var new_expanded = null;
 		var viewstates = ["dnv", "lv", "mv"];
 		var expanded = 0;

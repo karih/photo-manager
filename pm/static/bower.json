@@ -3,7 +3,7 @@
   "private": true,
 	"dependencies": {
 		"bootstrap": "latest",
-		"angular": "latest",
-		"angular-ui-router": "1.0.0-alpha.5",
+		"angular": "1.5.8",
+		"angular-ui-router": "1.0.0-beta.3"
 	}
 }

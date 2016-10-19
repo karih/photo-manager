@@ -4,6 +4,8 @@ import re
 import sys
 import logging
 
+import elasticsearch as es
+
 from .. import models
 from ..search import documents
 from . import helpers
@@ -11,15 +13,20 @@ from . import helpers
 def main(*args):
     """ Drops and rebuilds the elasticsearch index """
 
-    documents.PhotoIndex.delete(ignore=404)
-    documents.PhotoIndex.create(ignore=400)
+    skip_ids = set()
+    if "reset" in args:
+        documents.PhotoIndex.delete(ignore=404)
+        documents.PhotoIndex.create(ignore=400)
+    elif "repeat" in args:
+        pass
+        #es.Elasticsearch().search(index=app.config["ELASTICSEARCH_INDEX"], body={"query" : {"match_all":[]})
+        
 
     for photo in helpers.get_photo_batch_iterator():
         fields = {}
         for field in list(iter(documents.PhotoDocument._doc_type.mapping)):
             if hasattr(photo, field):
                 fields[field] = getattr(photo, field)
-
 
         make, model = photo.make, photo.model
         if make is None:

@@ -54,6 +54,7 @@ def scan_file(file_path, force=False, make_thumbnails=True):
     logging.debug("Scanning %s", file_path.encode('utf-8', 'replace').decode('utf-8'))
     try:
         file_exists = models.File.query.filter(models.File.path == file_path).count() == 1
+        hash = None
         if not file_exists or force:
             logging.info("Processing %s", file_path)
             if file_exists:
@@ -78,20 +79,16 @@ def scan_file(file_path, force=False, make_thumbnails=True):
                     warning.warn("File %s no longer exists", file_path)
 
             try:
+                photo_exists = True
                 photo = file.photo
-                if photo is None:
+                if photo is None and hash is not None:
                     try:
                         photo = models.Photo.query.filter(models.Photo.hash == hash).all()[0]
                     except IndexError as e:
-                        pass
+                        photo = models.Photo(hash=hash)
+                        photo_exists = False
 
-                if photo is None:
-                    photo_exists = False
-                    photo = models.Photo(hash=hash)
-                else:
-                    photo_exists = True
-
-                if not photo_exists or force:
+                if photo is not None and (not photo_exists or force):
                     photo.size = os.path.getsize(file_path)
                     photo.extension = os.path.splitext(file_path)[1][1:]
                     photo.format = models.Photo.extension_to_format_key(photo.extension)
@@ -103,7 +100,7 @@ def scan_file(file_path, force=False, make_thumbnails=True):
 
                 file.photo = photo
 
-                if make_thumbnails:
+                if photo is not None and make_thumbnails:
                     create_photo_thumbnails(photo)
 
 

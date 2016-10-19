@@ -1,14 +1,17 @@
-var app = angular.module('pm', ['ui.router']).config(function($rootScopeProvider){
-	$rootScopeProvider.digestTtl(20); // for the tree recursion
-});
+var app = angular.module('pm', ['ui.router']).config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMatcherFactoryProvider', '$rootScopeProvider', 
+	function($stateProvider, $locationProvider, $urlRouterProvider, $urlMatcherFactoryProvider, $rootScopeProvider) {
+		//$rootScopeProvider.digestTtl(20); // for the tree recursion
 
-app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMatcherFactoryProvider',
-	function($stateProvider, $locationProvider, $urlRouterProvider, $urlMatcherFactoryProvider) {
     $urlMatcherFactoryProvider.type("nonURIEncoded", {
         encode: function(val) { return val != null ? val.toString() : val; },
         decode: function(val) { return val != null ? val.toString() : val; },
         is: function(val) { return true; }
     });
+
+		var scrollToTop = function() {
+			$('html, body').animate({ scrollTop: -10000 }, 200);
+			//document.body.scrollTop = document.documentElement.scrollTop = 0;
+		}
 
 		$stateProvider
 			.state('photos', {
@@ -45,13 +48,17 @@ app.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMa
 				url: '/{id:int}',
 				templateUrl: '/static/partials/photos/single.html',
 				controller: 'PhotoCtrl',
-				params: {
+				onEnter: scrollToTop
+				/*params: {
 					id: {dynamic: true, value: 0}
-				}
+				}*/
 			});
 
 		$urlRouterProvider.otherwise('/photos');
 
+
 		$locationProvider.html5Mode(true);
-	}]);
+}]).run(['$transitions', function($transitions) {
+	$transitions.onSuccess({to: 'photos.details'}, function() { });
+}]);
 

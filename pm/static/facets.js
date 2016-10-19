@@ -179,7 +179,7 @@ app.directive('dateFacet', function() {
 			}
 
 			$scope.innerQueryFunction = function(query) {
-				console.log("dateFacet.query(", query, ", callback)");
+				//console.log("dateFacet.query(", query, ", callback)");
 
 				$scope.queryFunction({query: query, callback: function(response) {
 					$scope.null_candidates = response.null;
@@ -201,17 +201,17 @@ app.directive('dateFacet', function() {
 			}
 
 			$scope.$watch('value', function(new_value) {
-				console.log("dateFacet.$watch('value', ", new_value, ")");
+				//console.log("dateFacet.$watch('value', ", new_value, ")");
 				$scope.active = ($scope.value === null) ? false : true;
 			}, true);
 
 			$scope.$on('stateChangeSuccess', function(event) {
-				console.log("dateFacet.$scope.$on('stateChangeSuccess', ", event);
+				//console.log("dateFacet.$scope.$on('stateChangeSuccess', ", event);
 				$scope.innerQueryFunction($scope.value, function() {});
 			});
 
 			$scope.$watch('state', function(new_value) {
-				console.log("dateFacet.$watch('state', " + new_value + ")");
+				//console.log("dateFacet.$watch('state', " + new_value + ")");
 				if (new_value > 0) {
 					if ($scope.null_candidates === null) {
 						$scope.innerQueryFunction($scope.value, function(response) {
