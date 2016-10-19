@@ -28,19 +28,22 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 		});
 	}
 
-	/*$document.bind('keydown', function(event, args) {
-		var new_state = JSON.parse(JSON.stringify($stateParams));
-		if (event.keyCode == 39 && ($scope.offset + $scope.limit <= $scope.hits)) {
-			new_state["offset"] = $scope.offset + $scope.limit;
-			$state.go('photos.list', new_state);
+	$document.bind('keydown', function(event, args) {
+		//var new_state = JSON.parse(JSON.stringify($stateParams));
+		if (event.keyCode == 39 && ($scope.meta.offset + $scope.meta.limit <= $scope.meta.hits)) {
+			$scope.switchPage($scope.meta.offset + $scope.meta.limit, $scope.meta.limit);
+			//$state.go('photos.list', new_state);
+			$scope.$apply();
 		} else if (event.keyCode == 37) {
-			new_state["offset"] = Math.max(0, $scope.offset - $scope.limit);
-			$state.go('photos.list', new_state);
+			$scope.switchPage(Math.max(0, $scope.meta.offset - $scope.meta.limit), $scope.meta.limit);
+			//$state.go('photos.list', new_state);
+			$scope.$apply();
 		}	
 	});
+
 	$scope.$on('$destroy', function() {
 		$document.unbind('keydown');
-	});*/
+	});
 
 	this.uiOnParamsChanged = function (changedParams, $transition$) {
 		console.log("STATE HAS JUST CHANGED", changedParams);
@@ -75,7 +78,7 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 			});
 		}
 
-		var changable = ["date", "model", "dirname", "lens"];
+		var changable = ["date", "model", "dirname", "lens", "sort"];
 
 		angular.forEach(changable, function(val) {
 			if (new_val[val] !== old_val[val]) {
@@ -164,10 +167,7 @@ app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', '$filter', funct
 		["lens", "Lens", function(v) { return v; }],
 	];
 
-	//console.log($scope.properties);
-	
 	$scope.changeFile = function(v) {
-		//console.log("RASS");
 		$http.put('/api/photo/' + $stateParams["id"], {file_id: v}).success(function(data) {
 			$scope.photo = data.photo;
 		});

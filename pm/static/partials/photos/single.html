@@ -1,106 +1,100 @@
-<div class="photos-single" class="col-md-12">
-  <div class="row">
-    <div class="photo-photo image col-md-8">
-      <img src="{{ photo.large_url }}" class="img-responsive center-block img-thumbnail" />
-    </div>
+<div class="photo-single">
 
-    <div class="col-md-4">
-      <div class="photo-tags panel panel-default">
-        <div class="panel-heading">Tags</div>
-        <div class="panel-body">
-          <form class="form-inline">
-            <div class="form-group">
-              <label class="sr-only" for="tag">Tag</label>
-              <input type="search" class="form-control" id="tag" placeholder="Tag photo">
-            </div>
-          </form>
-
-          <ul ng-show="photo.tags.length > 0">
-            <li ng-repeat="tag in photo.tags">{{ tag[0] }} ({{ tag[1] }})</li>
-          </ul>
-
-          <p ng-show="photo.tags.length < 1">No tags...</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="col-md-4">
-      <div class="photo-people panel panel-default">
-        <div class="panel-heading">People</div>
-        <div class="panel-body">
-          <form class="form-inline">
-            <div class="form-group">
-              <label class="sr-only" for="person">Person</label>
-              <input type="search" class="form-control" id="person" placeholder="Tag a person in photo">
-            </div>
-          </form>
-
-          <ul ng-show="photo.people.length > 0">
-            <li ng-repeat="person in photo.people">{{ person[0] }} ({{ person[1] }})</li>
-          </ul>
-
-          <p ng-show="photo.people.length < 1">No people tagged...</p>
-        </div>
-      </div>
+  <div class="img-outer">
+    <div class="img-block">
+      <div class="img-inner"><img src="{{ photo.large_url }}" /></div>
     </div>
   </div>
 
-  <div class="row">
-    <div class="photo-files panel panel-default">
-      <div class="panel-heading">Files</div>
-  
-      <form>
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th></th>
-              <th>#</th>
-              <th>Filename</th>
-              <th>Creation Time</th>
-              <th>Scan Time</th>
-              <th>Dimensions (WxH px)</th>
-              <th>Size</th>
-              <th>Path</th>
-              <th>Hash</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-repeat="file in photo.files" ng-class="{ info: file.active }">
-              <td><input type="radio" name="file" id="file{{ file.id }}" value="{{ file.id }}" ng-checked="file.active" ng-click="changeFile(file.id)"></td> 
-              <td><a ui-sref="file-manager.single({ id: file.id })">{{ file.id }}<a></td>
-              <td>{{ file.basename|truncate_filename:25 }}</td>
-              <td>{{ file.ctime }}</td>
-              <td>{{ file.scanned }}</td>
-              <td>{{ file.width  }}x{{ file.height }}</td>
-              <td>{{ file.size | bytes }}</td>
-              <td>{{ file.path | truncate_filepath:20:file.basename }}</td>
-              <td>{{ file.hash | limitTo:20 }}...</td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-    </div>
-
-    <div class="photo-properties panel panel-default">
+  <div class="properties">
+    <div class="panel panel-default">
       <div class="panel-heading">Properties</div>
+
       <table class="table table-striped">
         <thead>
           <tr>
-            <th></th>
+            <th>Property</th>
             <th>Value</th>
-            <th ng-repeat="file in photo.files">{{ file.basename }} (#{{ file.id }})</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="prop in properties">
             <th>{{ prop[1] }}</th>
             <td>{{ prop[2](photo[prop[0]]) }}</td>
-            <td ng-repeat="file in photo.files">{{ prop[2](file[prop[0]]) }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <pre>{{ properties }} {{ photo }}</pre>
+  <div class="people">
+    <div class="panel panel-default">
+      <div class="panel-heading">People</div>
+      <div class="panel-body">
+        <form class="form-inline">
+          <div class="form-group">
+            <label class="sr-only" for="person">Person</label>
+            <input type="search" class="form-control" id="person" placeholder="Tag a person in photo">
+          </div>
+        </form>
+
+        <ul ng-show="photo.people.length > 0">
+          <li ng-repeat="person in photo.people">{{ person[0] }} ({{ person[1] }})</li>
+        </ul>
+
+        <p ng-show="photo.people.length < 1">No people tagged...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="labels">
+    <div class="panel panel-default">
+      <div class="panel-heading">Labels</div>
+      <div class="panel-body">
+        <form class="form-inline">
+          <div class="form-group">
+            <label class="sr-only" for="label">Label</label>
+            <input type="search" class="form-control" id="label" placeholder="Label photo">
+          </div>
+        </form>
+
+        <ul ng-show="photo.labels.length > 0">
+          <li ng-repeat="label in photo.labels">{{ label[0] }} ({{ label[1] }})</li>
+        </ul>
+
+        <p ng-show="photo.labels.length < 1">No labels...</p>
+      </div>
+    </div>
+  </div>
+
+  <br style="clear: both;" /> 
+
+  <div class="files">
+    <div class="panel panel-default">
+      <div class="panel-heading">Files</div>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Filename</th>
+            <th>Creation Time</th>
+            <th>Scan Time</th>
+            <th>Path</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="file in photo.files">
+            <td>{{ file.id }}</td>
+            <td title="{{ file.basename }}">{{ file.basename|truncate_filename:25 }}</td>
+            <td>{{ file.ctime }}</td>
+            <td>{{ file.scanned }}</td>
+            <td title="{{ file.path | truncate_filepath:120:file.basename }}">{{ file.path | truncate_filepath:40:file.basename }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
 </div>
