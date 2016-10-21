@@ -1,3 +1,4 @@
+import re
 import os
 import stat
 
@@ -42,11 +43,24 @@ SAVE_GROUP = None
 ### Photo scanning options
 # SEARCH_ROOT is the root folder under which we search for photos
 SEARCH_ROOT = os.environ['HOME']
-# SEARCH_EXCLUDE_DIRS is a list of common dir names that should be bypassed
-SEARCH_EXCLUDE_DIRS = ['tmp', 'temp', 'backup'] # directory names that are omitted from search
-# SEARCH_EXCLUDE_ABSOLUTE_PATHS is a list of absolute paths under SEARCH_ROOT that should be omitted
-SEARCH_EXCLUDE_ABSOLUTE_PATHS = ['/do/not/look/in/here', ] 
-# Note: In addition to these, all (hidden) folders starting with . are omitted from search.
+# SEARCH_EXCLUDE_DIRS is a list of regular expression patterns, which if matched 
+# using re.fullmatch() will not traverse into matched directory
+SEARCH_EXCLUDE_DIRS = [
+    r'.*?\/\..+', # skip hidden directories (starting with a dot)
+    r'.*?\/[Tt][Ee]?[Mm][Pp]', # skip directories named 'tmp' and 'temp'
+    r'.*?\/[Cc]ache', # skip directories named 'cache'
+    r'.*?\/[Dd]ownloads', # skip directories named 'Downloads'
+    r'.*?\/__MACOSX', # skip directories named '__MACOSX'
+    r'.*?\/[Rr]ecycled', # skip directories named 'Recycled'
+    r'.*?\/[Mm]y [Mm]usic', # skip directories named 'My Music'
+    #re.escape(r'/some/absolute/path/we/avoid'), 
+] 
+# SEARCH_EXCLUDE_FILES is a list of regular expression patterns, which if
+# matched using re.fullmatch() (with entire path) will skip that file
+SEARCH_EXCLUDE_FILES = [
+    r'.*?\/\..+', # skip hidden files
+    r'.*?\/[Aa]lbum[Aa]rt[^\/]*'
+]
 
 
 # Photo sizes

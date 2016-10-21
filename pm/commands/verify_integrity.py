@@ -19,17 +19,17 @@ def main(*args):
         file.check_for_deletion(photo)
 
         valid = list(map(file.check_if_valid_photo, [f for f in photo.files if not f.deleted]))
-        if sum(valid) == 0:
+        if not photo.deleted and sum(valid) == 0:
             logging.info("Marking photo %d for deletion due to zero parsable files", photo.id)
             photo.deleted = True
         elif sum(valid) != len(valid):
-            logging.warning("Photo %d has some valid files and some invalid ones", photo.id)
+            logging.warning("Photo %d has a mixture of valid and invalid files", photo.id)
 
         if photo.deleted:
             if os.path.exists(photo.path_large):
                 os.unlink(photo.path_large)
             if os.path.exists(photo.path_thumb):
-                os.unlink(photo.path_large)
+                os.unlink(photo.path_thumb)
             continue
 
         file.create_photo_thumbnails(photo)
