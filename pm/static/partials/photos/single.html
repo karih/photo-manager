@@ -1,5 +1,13 @@
 <div class="photo-single">
-
+  <div class="options">
+    <div class="btn-group">
+      <button ui-sref="photos({id: null})" type="button" class="btn btn-default">Back to search results</button>
+    </div>
+    <div class="btn-group">
+      <button ng-disabled="prev === null" ui-sref="photos(prev)" type="button" class="btn btn-default">Previous Photo</button>
+      <button ng-disabled="next === null" ui-sref="photos(next)" type="button" class="btn btn-default">Next Photo</button>
+    </div>
+  </div>
   <div class="img-outer">
     <div class="img-block">
       <div class="img-inner"><img src="{{ photo.large_url }}" /></div>
@@ -95,6 +103,5 @@
       </table>
     </div>
   </div>
-
-
+  
 </div>

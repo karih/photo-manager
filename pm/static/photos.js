@@ -1,6 +1,6 @@
 
 app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state', '$document', '$filter', function($scope, $http, $stateParams, $state, $document, $filter) {
-	//console.log("PhotosOverviewCtrl(", $stateParams, ")")
+	console.log("PhotosOverviewCtrl(", $stateParams, ")")
 
 	$scope.offset = $stateParams["offset"];
 	$scope.limit = $stateParams["limit"];
@@ -10,35 +10,91 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	$scope.default_sort_column = "date";
 	$scope.limits = [10, 20, 50, 100];
 
+	$scope.photos = null;
+	$scope.photo = null;
+	$scope.prev = null;
+	$scope.next = null;
+
+	var scrollToTop = function() {
+		$('html, body').animate({ scrollTop: -10000 }, 200);
+		//document.body.scrollTop = document.documentElement.scrollTop = 0;
+	}
+
 	$scope.$on('stateChangeSuccess', function(event) {
 		$scope.fetch(); // TODO check if custom event can be replaced by $transitions 
 	});
 
-
 	$scope.fetch = function() {
-		$http.get('/api/photos', {params: $stateParams} ).success(function(data) {
-			//console.log("SCOPE UPDTATED", $stateParams);
-			$scope.photos = data.photos;
-			$scope.meta = {
-				offset: data.offset, 
-				limit: data.limit, 
-				hits: data.hits, 
-				sort_column: data.sort_column, 
-				sort_order: data.sort_order
-			};
-		});
+		if ($stateParams["id"] === null) {
+			$scope.photo = null;
+			$scope.prev = null;
+			$scope.next = null;
+			$http.get('/api/photos', {params: $stateParams}).success(function(data) {
+				$scope.photos = data.photos;
+				$scope.meta = {
+					offset: data.offset, 
+					limit: data.limit, 
+					hits: data.hits, 
+					sort_column: data.sort_column, 
+					sort_order: data.sort_order
+				};
+			});
+		} else {
+			scrollToTop();
+
+			$http.get('/api/photo/' + $stateParams["id"]).success(function(data) {
+				$scope.photo = data.photo;
+			});
+			
+			$http.get('/api/photos', {params: $stateParams}).success(function(data) {
+				var previdx = null;
+				var nextidx = null;
+				var curidx  = null;
+
+				angular.forEach(data.photos, function(val, key) {
+					if (val.id == $stateParams["id"]) {
+						curidx = key;
+					}
+				});
+				$scope.prev = JSON.parse(JSON.stringify($stateParams));
+				$scope.next = JSON.parse(JSON.stringify($stateParams));
+
+				previdx = curidx - 1;
+				nextidx = curidx + 1;
+
+				if (previdx < 0 && data.previous !== null) {
+					$scope.prev["id"] = data.previous;
+					$scope.prev["offset"] = Math.max(0, data.offset-data.limit);
+				} else if (previdx >= 0) {
+					$scope.prev["id"] = data.photos[previdx].id;
+				} else {
+					$scope.prev = null;
+				}
+
+				if (nextidx >= data.photos.length && data.next !== null) {
+					$scope.next["id"] = data.next;
+					$scope.next["offset"] = data.offset + data.limit;
+				} else if (nextidx < data.photos.length) {
+					$scope.next["id"] = data.photos[nextidx].id;
+				} else {
+					$scope.next = null;
+				}	
+			});
+		}
 	}
 
 	$document.bind('keydown', function(event, args) {
 		//var new_state = JSON.parse(JSON.stringify($stateParams));
-		if (event.keyCode == 39 && ($scope.meta.offset + $scope.meta.limit <= $scope.meta.hits)) {
+		if ($scope.photo === null && event.keyCode == 39 && ($scope.meta.offset + $scope.meta.limit <= $scope.meta.hits)) {
 			$scope.switchPage($scope.meta.offset + $scope.meta.limit, $scope.meta.limit);
-			//$state.go('photos.list', new_state);
 			$scope.$apply();
-		} else if (event.keyCode == 37) {
+		} else if ($scope.photo !== null && event.keyCode == 39 && $scope.next !== null) {
+			$state.go('photos', $scope.next);
+		} else if ($scope.photo === null && event.keyCode == 37) {
 			$scope.switchPage(Math.max(0, $scope.meta.offset - $scope.meta.limit), $scope.meta.limit);
-			//$state.go('photos.list', new_state);
 			$scope.$apply();
+		} else if ($scope.photo !== null && event.keyCode == 37 && $scope.prev !== null) {
+			$state.go('photos', $scope.prev);
 		}	
 	});
 
@@ -47,8 +103,10 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	});
 
 	this.uiOnParamsChanged = function (changedParams, $transition$) {
-		//console.log("STATE HAS JUST CHANGED", changedParams);
+		console.log("this.uiOnParamsChanged(", changedParams, ")");
 		/* state called again with changed parameters */
+
+
 
 		angular.forEach(changedParams, function(value, key) {
 			$stateParams[key] = value;
@@ -87,27 +145,27 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 			}
 		});
 
-		$state.go("photos.list", new_val, {notify: true});
+		$state.go("photos", new_val, {notify: true});
 	}, true);
 
 
 	$scope.sortColumn = function(column) { 
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		new_state["sort"] = "+" + column;
-		return $state.href('photos.list', new_state);
+		return $state.href('photos', new_state);
 	};
 
 	$scope.sortOrder = function(order)  { 
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		new_state["sort"] = (order == "asc" ? "+" : "-") + $scope.meta.sort_column;
-		return $state.href('photos.list', new_state);
+		return $state.href('photos', new_state);
 	}
 
 	$scope.changeLimit = function(limit) {
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		new_state["limit"] = limit;
 		new_state["offset"] = Math.floor($scope.meta.offset / limit) * limit;
-		return $state.href('photos.list', new_state);
+		return $state.href('photos', new_state);
 	}
 
 	$scope.clearFilters = function() { $scope.state.dirname = "/"; }
@@ -128,7 +186,7 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	$scope.singleHref = function(photo) {
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		new_state.id = photo.id;
-		return $state.href("photos.details", new_state);
+		return $state.href("photos", new_state);
 	}
 
 	$scope.oneliner = function(photo) { return "P#" + photo.id };
@@ -143,18 +201,8 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 		var new_state = JSON.parse(JSON.stringify($stateParams));
 		new_state["offset"] = offset;
 		new_state["limit"] = limit;
-		return $state.href('photos.list', new_state);
+		return $state.href('photos', new_state);
 	}
-
-
-	//$scope.apertureFormatter = function(v) { return $filter('aperture')(v); }
-	//$scope.exposureFormatter = function(v) { return $filter('exposure')(v); }
-
-	$scope.fetch();
-}]);
-
-app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', '$filter', function($scope, $http, $stateParams, $filter) {
-	//console.log("PhotoCtrl(", $stateParams, ")");	
 
 	$scope.properties = [ 
 		["aperture", "Aperture", $filter('aperture'), ],
@@ -168,13 +216,16 @@ app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', '$filter', funct
 		["lens", "Lens", function(v) { return v; }],
 	];
 
-	$scope.changeFile = function(v) {
-		$http.put('/api/photo/' + $stateParams["id"], {file_id: v}).success(function(data) {
-			$scope.photo = data.photo;
-		});
-	}
 
-	$http.get('/api/photo/' + $stateParams["id"]).success(function(data) {
-		$scope.photo = data.photo;
-	});
+	//$scope.apertureFormatter = function(v) { return $filter('aperture')(v); }
+	//$scope.exposureFormatter = function(v) { return $filter('exposure')(v); }
+
+	$scope.fetch();
 }]);
+
+/*
+app.controller('PhotoCtrl', ['$scope', '$http', '$stateParams', '$filter', function($scope, $http, $stateParams, $filter) {
+	console.log("PhotoCtrl(", $stateParams, ")");	
+
+}]);
+*/

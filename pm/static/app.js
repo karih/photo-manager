@@ -8,19 +8,9 @@ var app = angular.module('pm', ['ui.router']).config(['$stateProvider', '$locati
         is: function(val) { return true; }
     });
 
-		var scrollToTop = function() {
-			$('html, body').animate({ scrollTop: -10000 }, 200);
-			//document.body.scrollTop = document.documentElement.scrollTop = 0;
-		}
-
 		$stateProvider
 			.state('photos', {
-				abstract: true,
-				url: "/photos",
-				template: "<ui-view />"
-			})
-			.state('photos.list', {
-				url: '?{offset:int}&{limit:int}&date&aperture&exposure&focal_length&focal_length_35&iso&make&model&lens&dirname&sort&{dnv:int}&{group:bool}&{mv:int}&{lv:int}&{dv:int}',
+				url: '/photos?{offset:int}&{limit:int}&date&aperture&exposure&focal_length&focal_length_35&iso&make&model&lens&dirname&sort&{dnv:int}&{group:bool}&{mv:int}&{lv:int}&{dv:int}&{id:int}',
 				templateUrl: '/static/partials/photos/photos.html',
 				controller: 'PhotosOverviewCtrl',
 				params: {
@@ -42,17 +32,17 @@ var app = angular.module('pm', ['ui.router']).config(['$stateProvider', '$locati
 					dnv: {dynamic: true, value: 0}, // dirname view state
 					date: {dynamic: true, value: null, replace: [{from: '', to: ''}]},
 					dv: {dynamic: true, value: 0}, // date view state
+					id: {dynamic: true, value: null}, 
 				}
-			})
-			.state('photos.details', {
-				url: '/{id:int}',
-				templateUrl: '/static/partials/photos/single.html',
-				controller: 'PhotoCtrl',
-				onEnter: scrollToTop
-				/*params: {
-					id: {dynamic: true, value: 0}
-				}*/
 			});
+			//.state('photos.details', {
+			//	url: '?{id:int}',
+			//	templateUrl: '/static/partials/photos/single.html',
+			//	controller: 'PhotoCtrl',
+			//	onEnter: scrollToTop,
+			//	params: {
+			//	}
+			//});
 
 		$urlRouterProvider.otherwise('/photos');
 

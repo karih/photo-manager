@@ -30,6 +30,7 @@
 
 .photo-single .img-outer { float: left; }
 .photo-single .properties, .photo-single .labels, .photo-single .people, .photo-single .rass, .photo-single .typpi { margin-left: 820px; }
+.photo-single .properties .panel { margin-top: 0px; }
 .photo-single .panel { margin: 10px; }
 .photo-single .panel-body:after { clear: none; }
 
@@ -61,6 +62,7 @@ ul.list-group span.indent { min-width: 14px; margin-right: 20px; background-colo
 div.photos div.photo-photo { padding: 5px; margin: 5px; }
 
 
+div.photo-list span.hits { padding-left: 10px; }
 
 
 div.facet div.panel-heading span.glyphicon { position: relative; top: 3px; margin-left: 5px; }

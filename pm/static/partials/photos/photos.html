@@ -1,5 +1,5 @@
-<div class="row">
-  <div photo-list>
+<div>
+  <div ng-if="photo === null" photo-list>
     <!--<div class="header">
       <button class="btn btn-default" ng-click="clearFilters()">Clear All Filters</button>
       <button ng-show="!state.group" class="btn btn-default" ng-click="state.group = true">Group Photos</button>
@@ -88,6 +88,8 @@
             <li ng-repeat="val in limits" ng-class="{ active: val == meta.limit }"><a ng-href="{{ changeLimit(val) }}">{{ val }}</a></li>
           </ul>
         </div>
+
+        <span class="hits">Hits: {{ meta.hits }}</span>
       </div>
 
       <div class="img-outer" ng-repeat="photo in photos">
@@ -101,6 +103,8 @@
 
     </div>
 
+
     <br style="clear: both; " />
   </div>
+  <div ng-if="photo !== null" ng-include="'/static/partials/photos/single.html'"></div>
 </div>

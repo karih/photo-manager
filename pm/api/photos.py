@@ -285,8 +285,8 @@ def photos():
                 
             req = {
                 'query' : query,
-                'from' : offset, 
-                'size' : limit, 
+                'from' : (offset - 1) if offset > 0 else offset, 
+                'size' : (limit + 2) if offset > 0 else (limit + 1), 
                 "sort" : {
                     sort_column : {
                         "order" : sort_order
@@ -302,14 +302,22 @@ def photos():
                 d["id"] = photo["_id"]
                 return d
 
+            hits = res["hits"]["hits"]
+            previd = hits[0]["_id"] if offset > 0 else None
+            nextid = hits[-1]["_id"] if ((len(hits) == (limit + 2) and offset > 0) or ((len(hits) == (limit + 1)) and offset == 0)) else None
+            hits = hits[1:limit+1] if offset > 0 else hits[0:limit]
+
+
             #return jsonify(query=q.to_dict(), response=r)
             return jsonify(
                 request=req, 
                 response=res,
-                photos=[dct(photo) for photo in res["hits"]["hits"]],
+                photos=[dct(photo) for photo in hits],
                 hits=res["hits"]["total"],
                 offset=offset,
                 limit=limit,
+                previous=previd,
+                next=nextid,
                 sort_column=sort_column,
                 sort_order=sort_order,
             )
