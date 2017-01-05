@@ -7,6 +7,9 @@
       <button ng-disabled="prev === null" ui-sref="photos(prev)" type="button" class="btn btn-default">Previous Photo</button>
       <button ng-disabled="next === null" ui-sref="photos(next)" type="button" class="btn btn-default">Next Photo</button>
     </div>
+
+    <span class="hits">Photo {{ photo.position+1 }} out of {{ photo.hits }}.</span>
+
   </div>
   <div class="img-outer">
     <div class="img-block">

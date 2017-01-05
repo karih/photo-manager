@@ -11,95 +11,6 @@ from wand.image import Image
 
 # none of these should depend on anything below pm/
 
-
-def extract_info(orig_filename):
-    def first(*lst):
-        for i in lst:
-            if i is not None:
-                return i
-        return None
-
-    def parse(dct, key, mapping=None):
-        if key not in dct:
-            return None
-        elif mapping is None:
-            return dct[key]
-        else:
-            try:
-                return mapping(dct[key])
-            except:
-                logging.error("Error mapping field %s (%s, %s)", dct[key], dct, key)
-                return None
-
-    def aperture_parse(v):
-        if v[0:2].lower() == "f/":
-            return float(v[2:])
-        elif v[0].lower() == "f":
-            return float(v[1:])
-        elif "/" in v:
-            x, y = v.split("/")
-            return float(x)/int(y)
-
-    def exposure_parse(v):
-        if " " in v:
-            v = v.split(" ")[0]
-
-        if "/" in v:
-            x, y = v.split("/")
-            return float(x) / int(y)
-        else:
-            return float(v)
-
-    def focal_parse(v):
-        if " " in v:
-            v = v.split(" ")[0]
-
-        if "/" in v:
-            x, y = v.split("/")
-            return float(x) / int(y)
-        else:
-            return float(v)
-
-        
-    info = {}
-    
-    with Image(filename=orig_filename) as im:
-        logging.debug("Opened file %s", orig_filename)
-        m = im.metadata
-        info["width"] = im.width
-        info["height"] = im.height
-        if im.width < 1 or im.height < 1:
-            raise ValueError("Could not read image object (non-positive dimensions)")
-
-        info["date"] = parse(m, "exif:DateTime", lambda x: datetime.datetime.strptime(x, "%Y:%m:%d %H:%M:%S"))
-        info["aperture"] = first(
-                parse(m, "dng:Aperture", aperture_parse),
-                parse(m, "exif:FNumber", aperture_parse),
-        )
-        info["exposure"] = first(
-                parse(m, "dng:Shutter", exposure_parse),
-                parse(m, "exif:ExposureTime", exposure_parse)
-        )
-        info["focal_length"] = first(
-                parse(m, "dng:FocalLength", focal_parse),
-                parse(m, "exif:FocalLength", focal_parse)
-        ) 
-        info["focal_length_35"] = first(
-                parse(m, "dng:FocalLength35", lambda x: float(x[0:-3])),
-                parse(m, "exif:FocalLengthIn35mmFilm", lambda x: float(x))
-        ) 
-        info["iso"] = first(parse(m, "dng:ISOSpeed", lambda x: int(x)), parse(m, "exif:ISOSpeedRatings", lambda x: int(x)))
-        info["make"] = first(parse(m, "dng:Make"), parse(m, "exif:Make"))
-        info["model"] = first(parse(m, "dng:Model"), parse(m, "exif:Model"))
-        info["orientation"] = first(parse(m, "exif:Orientation", lambda x: int(x)))
-
-        info["lens"] = first(parse(m, "dng:Lens"))
-
-        logging.debug("Closing file %s", orig_filename)
-
-    return info
-
-
 def send_file(app, f, **kwargs):
     def xaccel(p):
         r = flask.Response("")
@@ -116,7 +27,18 @@ def send_file(app, f, **kwargs):
     else:
         return flask.send_file(f, **kwargs)
 
-def resize_dimensions(orig, outer):
-    scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
-    return round(orig[0]*scaling), round(orig[1]*scaling)
+def resize_dimensions(orig, outer, box=False):
+    """ Given the original dimension `orig` and the `outer` dimension of the thumbnail,
+        calculate the actual destination resolution (without cropping and stretching).
+        With `box` as true, calculate the destination size and offset resulting in a 
+        non-stretched cropped version of orig that fits in outer (using up all the box).
+    """
+    if box:
+        scaling = min(1, max(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
+        excess = orig[0] * scaling - outer[0], orig[1] * scaling - outer[1]
+        offset = max(0, excess[0]//2), max(0, excess[1]//2)
+        return round(orig[0]*scaling), round(orig[1]*scaling), offset[0], offset[1]
+    else:
+        scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
+        return round(orig[0]*scaling), round(orig[1]*scaling)
 

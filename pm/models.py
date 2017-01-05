@@ -15,16 +15,46 @@ from sqlalchemy.sql import func
 
 from . import app, Base, helpers
 
+FORMAT_EXTENSIONS = (
+    ('JPG', ('jpg', 'jpeg')), 
+    ('PNG', ('png', )),
+    ('NEF', ('nef', )),
+    ('CR2', ('cr2', )),
+    ('CRW', ('crw', )),
+    ('ARW', ('arw', )),
+    ('SRF', ('srf', )),
+    ('SR2', ('sr2', ))
+)
+
+
+def model_iterator(query, pre=None, post=None):
+    rows = query.count()
+    limit = 1000
+    
+    for offset in [x*limit for x in range(rows//limit + 1)]:
+        if pre is not None:
+            pre(offset=offset, limit=limit, rows=rows)
+        for obj in query.offset(offset).limit(limit):
+            yield obj
+        if post is not None:
+            post(offset=offset, limit=limit, rows=rows)
+
 
 class File(Base):
     __tablename__ = 'files'
+
+    FORMATS = [x[0] for x in FORMAT_EXTENSIONS]
 
     id = sa.Column(sa.Integer, primary_key=True)
     ctime = sa.Column(sa.DateTime, nullable=False)
     path = sa.Column(sa.String(1000), nullable=False, unique=True)
     scanned = sa.Column(sa.DateTime, server_default=func.now()) # datetime of file discovery
     error = sa.Column(sa.Text, nullable=True) 
-    deleted = sa.Column(sa.Boolean, nullable=False) 
+    deleted = sa.Column(sa.Boolean, nullable=False, server_default='f', default=False) 
+
+    hash = sa.Column(sa.String(128), nullable=False) # sha512 hexdigest
+    format = sa.Column(sa.SmallInteger, nullable=False)
+    size = sa.Column(sa.Integer, nullable=False)
 
     photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
     photo = relationship("Photo", back_populates="files")
@@ -36,6 +66,14 @@ class File(Base):
     @property
     def dirname(self):
         return os.path.dirname(self.path)
+
+    @staticmethod
+    def extension_to_format_key(ext):
+        for i, (format, extensions) in enumerate(FORMAT_EXTENSIONS):
+            if ext.lower() in extensions:
+                return i
+        raise ValueError("Unknown extension %s" % ext)
+
 
 
 people_association_table = sa.Table('people_photos', Base.metadata,
@@ -50,16 +88,6 @@ labels_association_table = sa.Table('labels_photos', Base.metadata,
 )
 
 
-FORMAT_EXTENSIONS = (
-    ('JPG', ('jpg', 'jpeg')), 
-    ('PNG', ('png', )),
-    ('NEF', ('nef', )),
-    ('CR2', ('cr2', )),
-    ('CRW', ('crw', )),
-    ('ARW', ('arw', )),
-    ('SRF', ('srf', )),
-    ('SR2', ('sr2', ))
-)
 
 
 class Photo(Base):
@@ -68,14 +96,9 @@ class Photo(Base):
     """
     __tablename__ = 'photos'
 
-    FORMATS = [x[0] for x in FORMAT_EXTENSIONS]
-
     id = sa.Column(sa.Integer, primary_key=True)
-    size = sa.Column(sa.Integer, nullable=False)
-    hash = sa.Column(sa.String(128), nullable=False) # sha512 hexdigest
     width = sa.Column(sa.SmallInteger, nullable=False)
     height = sa.Column(sa.SmallInteger, nullable=False)
-    format = sa.Column(sa.SmallInteger, nullable=False)
 
     # most important exif data
     date = sa.Column(sa.DateTime, nullable=True) # exif timestamp
@@ -100,8 +123,9 @@ class Photo(Base):
     hidden = sa.Column(sa.Boolean, nullable=False, default=False)
     deleted = sa.Column(sa.Boolean, nullable=False, default=False)
 
-    # foreign keys
-    files = relationship("File", back_populates="photo")
+    ### foreign keys
+    # here the ordering ensures the non-raw images are first (with lowest format number)
+    files = relationship("File", back_populates="photo", order_by="File.format")
 
     group_id = sa.Column(sa.Integer, sa.ForeignKey('groups.id'), nullable=True)
     group = relationship("Group", back_populates="photos")
@@ -112,23 +136,15 @@ class Photo(Base):
     #primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
     #derivatives = relationship('PhotoDerivative', back_populates='orig')
 
-    
-    @staticmethod
-    def extension_to_format_key(ext):
-        for i, (format, extensions) in enumerate(FORMAT_EXTENSIONS):
-            if ext.lower() in extensions:
-                return i
-        raise ValueError("Unknown extension %s" % ext)
-
     @property
     def path_thumb(self):
         actual_size = helpers.resize_dimensions((self.width, self.height), app.config["THUMB_SIZE"]) 
-        return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.hash, actual_size[0], actual_size[1]))
+        return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.files[0].hash, actual_size[0], actual_size[1]))
 
     @property
     def path_large(self):
         actual_size = helpers.resize_dimensions((self.width, self.height), app.config["LARGE_SIZE"]) 
-        return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.hash, actual_size[0], actual_size[1]))
+        return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.files[0].hash, actual_size[0], actual_size[1]))
 
     @property
     def path(self):
@@ -173,7 +189,6 @@ class Group(Base):
     id = sa.Column(sa.Integer, primary_key=True)
 
     photos = relationship("Photo", back_populates="group")
-
 
     def merge(self, group):
         for photo in group.photos:

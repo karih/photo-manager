@@ -2,7 +2,7 @@
 import json
 import datetime
 import logging
-from flask import jsonify, Response, request, url_for
+from flask import jsonify, Response, request, url_for, abort
 import elasticsearch as es
 import elasticsearch_dsl as esd
 
@@ -264,12 +264,11 @@ def photos():
 
 
         try:
-            if len(filters) == 0:
-                query = {"match_all": []}
-            elif len(filters) == 1:
-                query = list(filters.items())[0][1]
-            else:
-                query = {"and" : [f[1] for f in filters.items()]}
+            req = {}
+            #if len(filters) == 1:
+            #    req.extend(list(filters.items())[0][1])
+            #else:
+            #    req.extend({"bool" : [f[1] for f in filters.items()]})
 
             sort_columns = ["date", "size"]
             sort_column = "date"
@@ -282,17 +281,10 @@ def photos():
                 #raise Exception(request.args["sort"], request.args["sort"].lstrip("-+"))
                 if so in sort_columns:
                     sort_column = so
-                
-            req = {
-                'query' : query,
-                'from' : (offset - 1) if offset > 0 else offset, 
-                'size' : (limit + 2) if offset > 0 else (limit + 1), 
-                "sort" : {
-                    sort_column : {
-                        "order" : sort_order
-                    }
-                }
-            }
+            
+            req["from"] = (offset - 1) if offset > 0 else offset
+            req["size"] = (limit + 2) if offset > 0 else (limit + 1)
+            req["sort"] = { sort_column : { "order" : sort_order } }
 
             res = es.Elasticsearch().search(index=app.config["ELASTICSEARCH_INDEX"], body=req)
 
@@ -303,8 +295,8 @@ def photos():
                 return d
 
             hits = res["hits"]["hits"]
-            previd = hits[0]["_id"] if offset > 0 else None
-            nextid = hits[-1]["_id"] if ((len(hits) == (limit + 2) and offset > 0) or ((len(hits) == (limit + 1)) and offset == 0)) else None
+            previd = hits[0]["_id"] if (offset > 0 and len(hits) > 0) else None
+            nextid = hits[-1]["_id"] if (len(hits) == ((limit + 2) if offset > 0 else (limit + 1)) and ((len(hits) == (limit + 2) and offset > 0) or ((len(hits) == (limit + 1)) and offset == 0))) else None
             hits = hits[1:limit+1] if offset > 0 else hits[0:limit]
 
 
@@ -349,11 +341,8 @@ def photo(id):
             'lens' : photo.lens,
             'changed' : photo.changed,
             'files' : [],
-            'size' : photo.size,
-            'hash' : photo.hash,
             'width' : photo.width,
             'height' : photo.height,
-            'format' : photo.format,
             'date' : photo.date,
             'labels' : [(label.id, label.label) for label in photo.labels],
             'people' : [(person.id, person.name) for person in photo.people],
@@ -370,6 +359,10 @@ def photo(id):
         return info
 
     p = Photo.query.get(id)
+
+    if p is None or p.deleted:
+        abort(404)
+
     if request.method == "PUT":
         assert "file_id" in request.get_json()
         im = [f for f in p.files if f.id == int(request.get_json().get("file_id"))][0]
@@ -379,102 +372,3 @@ def photo(id):
     else:
         return jsonify(photo=get_info(p))
 
-'''
-@app.route('/api/photos2')
-def photos2():
-    def date_mapping(v):
-        try:
-            return 'date_day', datetime.datetime.strptime(v, "%Y-%m-%d")
-        except ValueError as e:
-            try:
-                return 'date_month', datetime.datetime.strptime(v, "%Y-%m")
-            except ValueError as e:
-                return 'date_year', datetime.datetime.strptime(v, "%Y")
-
-    filters = {}
-    mappings = {
-        "aperture" : float,
-        "iso" : int,
-        "make" : str,
-        "lens" : str,
-        "focal_length_35" : float,
-        "exposure" : float,
-        "date" : date_mapping,
-        "path" : str,
-    }
-
-    for key, val in mappings.items():
-        if key in request.args:
-            out = val(request.args[key])
-            if isinstance(out, tuple):
-                filters[out[0]] = out[1]
-            else:
-                filters[key] = out
-
-    offset = int(request.args.get("offset", 0))
-    limit = int(request.args.get("limit", 20))
-
-    if limit > 20:
-        limit = 20
-
-    order = request.args.get("order", "-date")
-    search = ""
-
-    #q = Search(doc_type=[PhotoDocument, GroupDocument], index=PhotoIndex)
-    q = esd.Search(doc_type=["_all", ], index="_all")
-    #q = q.query('multi_match', fields=['aa', 'bb'], query=search)
-
-    q = PhotoSearch(query=search, filters=filters).build_search()
-
-    response = q.sort(order)[offset:offset+limit].execute()
-
-    def dct(photo):
-        d = {}
-        d["thumb_url"] = url_for('image_file', id=photo.file_id, size="thumb")
-        d["id"] = photo.meta.id
-        return d
-
-    facets = {}
-    for key, val in PhotoSearch.facets.items():
-        if key.startswith("date"):
-            continue
-
-        values = []
-        for f in getattr(response.facets, key):
-            values.append({'value' : f[0], 'selected' : f[2], 'count' : f[1]})
-        facets[key] = values 
-
-    years = []
-    for year_value, year_count, year_selected in response.facets["date_year"]:
-        months = []
-        for month_value, month_count, month_selected in response.facets["date_month"]:
-            if month_value.year == year_value.year:
-                days = []
-                for day_value, day_count, day_selected in response.facets["date_day"]:
-                    if day_value.month == month_value.month and day_value.year == year_value.year:
-                        days.append({'value' : day_value.strftime("%Y-%m-%d"), 'selected' : day_selected, 'count' : day_count})
-
-                months.append({
-                    'value' : month_value.strftime("%Y-%m"), 
-                    'selected' : month_selected, 
-                    'count' : month_count, 
-                    'expanded' : any([x["selected"] for x in days]) or month_selected,
-                    'days' : sorted(days, key=lambda x: x['value'])
-                })
-        years.append({
-            'value' : year_value.strftime("%Y"), 
-            'selected' : year_selected, 
-            'count' : year_count, 
-            'expanded' : any([x["expanded"] for x in months]) or year_selected,
-            'months' : sorted(months, key=lambda x: x['value'])
-        })
-
-    facets["date_tree"] = sorted(years, key=lambda x: x['value']) 
-        
-    return jsonify({
-        'facets' : facets,
-        'photos' : [dct(photo) for photo in response.hits], 
-        'results' : response.hits.total,
-        'query' : q.to_dict()
-    })
-'''

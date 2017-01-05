@@ -14,7 +14,8 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 	$scope.photo = null;
 	$scope.prev = null;
 	$scope.next = null;
-
+	$scope.hits = null;
+	
 	var scrollToTop = function() {
 		$('html, body').animate({ scrollTop: -10000 }, 200);
 		//document.body.scrollTop = document.documentElement.scrollTop = 0;
@@ -29,6 +30,7 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 			$scope.photo = null;
 			$scope.prev = null;
 			$scope.next = null;
+
 			$http.get('/api/photos', {params: $stateParams}).success(function(data) {
 				$scope.photos = data.photos;
 				$scope.meta = {
@@ -42,8 +44,12 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 		} else {
 			scrollToTop();
 
+			$scope.photo = {};
+
 			$http.get('/api/photo/' + $stateParams["id"]).success(function(data) {
-				$scope.photo = data.photo;
+				angular.forEach(data.photo, function(val, key) {
+					$scope.photo[key] = data.photo[key];
+				});
 			});
 			
 			$http.get('/api/photos', {params: $stateParams}).success(function(data) {
@@ -61,6 +67,9 @@ app.controller('PhotosOverviewCtrl', ['$scope', '$http', '$stateParams', '$state
 
 				previdx = curidx - 1;
 				nextidx = curidx + 1;
+
+				$scope.photo.position = curidx + data.offset;
+				$scope.photo.hits = data.hits;
 
 				if (previdx < 0 && data.previous !== null) {
 					$scope.prev["id"] = data.previous;
