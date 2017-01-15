@@ -92,6 +92,8 @@
             <th>Creation Time</th>
             <th>Scan Time</th>
             <th>Path</th>
+            <th>Size</th>
+            <th>Hash</th>
           </tr>
         </thead>
         <tbody>
@@ -101,6 +103,8 @@
             <td>{{ file.ctime }}</td>
             <td>{{ file.scanned }}</td>
             <td title="{{ file.path | truncate_filepath:120:file.basename }}">{{ file.path | truncate_filepath:40:file.basename }}</td>
+            <td>{{ file.size | bytes }}</td>
+            <td>{{ file.hash | limitTo:10 }}...</td>
           </tr>
         </tbody>
       </table>

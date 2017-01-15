@@ -5,6 +5,7 @@ import sys
 import logging
 
 import elasticsearch as es
+import elasticsearch_dsl as esd
 
 from .. import models
 from ..search import documents
@@ -15,6 +16,7 @@ def main(*args):
 
     skip_ids = set()
     if "reset" in args:
+        raise Exception("rass")
         documents.PhotoIndex.delete(ignore=404)
         documents.PhotoIndex.create(ignore=400)
     elif "repeat" in args:

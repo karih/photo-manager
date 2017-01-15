@@ -20,7 +20,6 @@ app.directive('dirnameFacet', function() {
 				//console.log("innerQueryFuction(", query, ", ", callback, ")");
 				if (query === null || query === "" || query.length < 2) { query = "/"; }
 				$scope.queryFunction({query: query, callback: function(response) { 
-					//console.log("RASSS", response);
 					callback(response); 
 				}});
 			}
@@ -75,7 +74,7 @@ app.directive('termFacet', function() {
 			$scope.query = $scope.value;
 
 			$scope.innerQueryFunction = function(query, callback) {
-				//console.log("termFacet(", $scope.title, ").query(", query, ", callback)");
+				console.log("termFacet(", $scope.title, ").query(", query, ", callback)");
 				$scope.queryFunction({query: query, callback: function(response) { 
 					//console.log("termFacet(", $scope.title, ").queryFunctionCallback(", response, ")");
 					$scope.null_candidates = response.null;
@@ -117,18 +116,20 @@ app.directive('termFacet', function() {
 
 			$scope.$watch('state', function(new_value) {
 				//console.log("termFacet(", $scope.title, ").$watch('state', " + new_value + ")");
-				if ($scope.null_candidates === null) {
-					$scope.innerQueryFunction($scope.value, function() {});
-				}
+				if (new_value > 0) {
+					if ($scope.null_candidates === null) {
+						$scope.innerQueryFunction($scope.value, function() {});
+					}
 
-				if (new_value == 2 && $scope.all_candidates === null) {
-					$scope.all_candidates = [];
-					$scope.queryFunction({query: null, callback: function(response) {
-						angular.forEach(response.buckets, function(val) {
-							$scope.all_candidates.push(val);
-						});
-						$scope.null_candidates = response.null;
-					}});
+					if (new_value == 2 && $scope.all_candidates === null) {
+						$scope.all_candidates = [];
+						$scope.queryFunction({query: null, callback: function(response) {
+							angular.forEach(response.buckets, function(val) {
+								$scope.all_candidates.push(val);
+							});
+							$scope.null_candidates = response.null;
+						}});
+					}
 				}
 			});
 		},
@@ -179,7 +180,7 @@ app.directive('dateFacet', function() {
 			}
 
 			$scope.innerQueryFunction = function(query) {
-				//console.log("dateFacet.query(", query, ", callback)");
+				console.log("dateFacet.query(", query, ", callback)");
 
 				$scope.queryFunction({query: query, callback: function(response) {
 					$scope.null_candidates = response.null;

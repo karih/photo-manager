@@ -1,74 +1,90 @@
-from functools import partial
-
 import elasticsearch as es
-import elasticsearch_dsl as esd
 
-class FacetedResponse(esd.result.Response):
-    def __init__(self, *args, **kwargs):
-        search = kwargs.pop("search")
-        super(FacetedResponse, self).__init__(*args, **kwargs)
-        super(esd.utils.AttrDict, self).__setattr__('_search', search)
+from .. import app
+from .aggregates import Aggregate, TermAggregate, DirnameAggregate, DateAggregate
+
+class PhotoResult(object):
+    def __init__(self, search, response):
+        self.search = search
+        self.response = response
+        self.parse()
+
+    def parse(self):
+        offset, limit = self.search.offset, self.search.limit
+        hits = self.response["hits"]["hits"]
+        self.previous_id = hits[0]["_id"] if (offset > 0 and len(hits) > 0) else None
+        self.next_id = hits[-1]["_id"] if (len(hits) == ((limit + 2) if offset > 0 else (limit + 1)) and ((len(hits) == (limit + 2) and offset > 0) or ((len(hits) == (limit + 1)) and offset == 0))) else None
+        self.hits = self.response["hits"]["total"]
+        self.documents = hits[1:limit+1] if offset > 0 else hits[0:limit]
+
+
+class PhotoSearch(object):
+    def __init__(self, args):
+        self.aggregates = [
+            DateAggregate("date"), 
+            DirnameAggregate("dirname"), 
+            TermAggregate("model"), 
+            TermAggregate("lens")
+        ]
+        self.args = args
 
     @property
-    def facets(self):
-        if not hasattr(self, "_facets"):
-            super(esd.utils.AttrDict, self).__setattr__('_facets', esd.utils.AttrDict({}))
-            for facet in self._search.facets:
-                if "include_%s" % facet.name in self._search.args:
-                    self._facets[facet.name] = facet.consume(self._search.args, **{akey: self.aggregations["_filter_" + akey] for akey, adct in facet.aggregates()})
+    def is_aggregate_query(self):
+        return "agg" in self.args
 
-        return self._facets
+    def execute(self): 
+        filters = {}
+        for a in self.aggregates:
+            if a.name in self.args:
+                if self.args[a.name] == "": # if blank, interpret like 
+                    filters[a.name] = {"type": "must_not", "filter" : {"exists" : {"field" : a.name}}}
+                else:
+                    filters[a.name] = {"type": "must", "filter" : a.filter(self.args[a.name])}
 
-#    @property
-#    def query_string(self):
-#        return self._search._query
-#
-#    @property
-#    def facets(self):
-#        if not hasattr(self, '_facets'):
-#            super(AttrDict, self).__setattr__('_facets', AttrDict({}))
-#            for name, facet in iteritems(self._search.facets):
-#                self._facets[name] = facet.get_values(
-#                    self.aggregations['_filter_' + name][name]['buckets'],
-#                    self._search.filter_values.get(name, ())
-#                )
-#        return self._facets
+        if self.is_aggregate_query:
+            aggregate_query = self.args.get("q")
+            aggregate = [x for x in self.aggregates if x.name == self.args.get("agg")][0]
 
+            result = aggregate.query(self.args.get("q"), filters)
+            self.request = aggregate.request if hasattr(aggregate, "request") else None
+        else:
+            try:
+                limit = int(self.args.get("limit"))
+                if limit > 100 or limit < 1:
+                    limit = 20
+            except (TypeError, ValueError):
+                limit = 20
 
-class FacetedSearch(esd.Search):
-    def __init__(self, *args, **kwargs):
-        self.facets = kwargs.pop("facets", None)
-        self.args = kwargs.pop("args", None)
-        super().__init__(*args, **kwargs)
-        self._response_class = partial(FacetedResponse, search=self)
+            try:
+                offset = int(self.args.get("offset"))
+                if offset > (10000 - limit) or offset < 0:
+                    offset = 0
+            except (TypeError, ValueError):
+                offset = 0
 
-    def build(self):
-        fs = self._clone()
+            self.offset = offset
+            self.limit = limit
+            req = {}
+            req["query"] = Aggregate.combine_filters(filters)
 
-        for facet in self.facets:
-            if "include_%s" % facet.name not in self.args:
-                continue
+            sort_columns = ["date", "size"]
+            self.sort_column = "date"
+            self.sort_order = "desc" # asc
 
-            agg_filter = esd.Q("match_all")
-            for inner in self.facets:
-                if inner.name != facet.name:
-                    if inner.is_filtered(self.args):
-                        agg_filter &= inner.filters(self.args)
+            if "sort" in self.args and len(self.args["sort"]) > 0:
+                self.sort_order = "desc" if (self.args["sort"][0] == "-") else "asc"
 
-            for agg_name, agg in facet.aggregates():
-                fs.aggs.bucket("_filter_" + agg_name, "filter", filter=agg_filter).bucket(agg_name, agg)
+                so = self.args["sort"].lstrip("-+")
+                if so in sort_columns:
+                    self.sort_column = so
+            
+            req["from"] = (offset - 1) if offset > 0 else offset
+            req["size"] = (limit + 2) if offset > 0 else (limit + 1)
+            req["sort"] = { self.sort_column : { "order" : self.sort_order } }
 
-        post_filter = esd.Q('match_all')
-        for facet in self.facets:
-            if facet.is_filtered(self.args):
-                post_filter &= facet.filters(self.args)
-        fs.post_filter._proxied &= post_filter
+            self.request = req
 
-        return fs
+            result = PhotoResult(self, es.Elasticsearch().search(index=app.config["ELASTICSEARCH_INDEX"], body=req))
 
-    def _clone(self):
-        fs = super()._clone()
-        fs.facets = self.facets
-        fs.args = self.args.copy()
-        fs._response_class = partial(FacetedResponse, search=self)
-        return fs
+        return result
+
