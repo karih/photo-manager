@@ -41,8 +41,13 @@ SAVE_MASK = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 SAVE_GROUP = None
 
 ### Photo scanning options
-# SEARCH_ROOT is the root folder under which we search for photos
-SEARCH_ROOT = os.environ['HOME']
+# SEARCH_ROOTS are the root folders under which we search for photos
+# this should be a list of two-tuples, where the first entry is a directory, and the 
+# second entry is a user or list of users which are considered "owners" of these files
+# users can be specified by username (string) or database id (integers)
+SEARCH_ROOTS = [
+    (os.environ['HOME'], 1)
+]
 # SEARCH_EXCLUDE_DIRS is a list of regular expression patterns, which if matched 
 # using re.fullmatch() will not traverse into matched directory
 SEARCH_EXCLUDE_DIRS = [

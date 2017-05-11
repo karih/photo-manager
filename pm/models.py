@@ -12,8 +12,9 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, HSTORE, JSON
 from sqlalchemy.sql import func
+from sqlalchemy import event
 
-from . import app, Base, helpers
+from . import app, Base, helpers, es
 
 FORMAT_EXTENSIONS = (
     ('JPG', ('jpg', 'jpeg')), 
@@ -51,7 +52,11 @@ class User(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     username = sa.Column(sa.String(1000), nullable=False, unique=True)
-    password = sa.Column(sa.String(1000), nullable=False) # sha512 hexdigest
+    password = sa.Column(sa.String(1000), nullable=False)
+
+    last_movement       = sa.Column(sa.DateTime, nullable=True)
+    last_authentication = sa.Column(sa.DateTime, nullable=True)
+    last_pw_change      = sa.Column(sa.DateTime, nullable=True)
 
     files = relationship("File", back_populates="users", secondary=user_files_association_table)
 
@@ -163,6 +168,25 @@ class Photo(Base):
     #primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
     #derivatives = relationship('PhotoDerivative', back_populates='orig')
 
+    __document_name__ = "photo"
+    __document__ = {
+        "properties": {
+            "aperture": { "type": "float" }, 
+            "path": { "type": "string", "index": "not_analyzed" }, 
+            "date": { "type": "date" }, 
+            "basenames": { "type": "string", "index": "not_analyzed" }, 
+            "dirnames": { "type": "string", "index": "not_analyzed" }, 
+            "exposure": { "type": "float" }, 
+            "model": { "type": "string", "index": "not_analyzed" }, 
+            "iso": { "type": "integer" }, 
+            "lens": { "type": "string", "index": "not_analyzed" }, 
+            "focal_length": { "type": "float" }, 
+            "focal_length_35": { "type": "float" }, 
+            "size": { "type": "integer" },
+            "users": { "type": "integer" }
+        }
+    }
+
     @property
     def path_thumb(self):
         actual_size = helpers.resize_dimensions((self.width, self.height), app.config["THUMB_SIZE"]) 
@@ -185,7 +209,9 @@ class Photo(Base):
     def dirnames(self):
         return sorted(list(set([f.dirname for f in self.files])))
 
-    
+    def get_document(self):
+        fields = ('width', 'height', 'date', 'dirnames', 'model', 'lens')
+        return {k: getattr(self, k) for k in fields}
 
 #    def dct(self):
 #        return {
@@ -249,3 +275,21 @@ class Group(Base):
 #
 #    photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=False)
 #    photo = relationship('Photos', back_populates='derivatives')
+
+
+### EVENTS
+def photo_event(type):
+    def inner(mapper, connection, target):
+        if type in (0, 1):
+            (es.index if type == 1 else es.create)(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body=target.get_document())
+        else:
+            es.delete(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id)
+    return inner
+
+event.listen(Photo, 'after_insert', photo_event(0))
+event.listen(Photo, 'after_update', photo_event(1))
+event.listen(Photo, 'after_delete', photo_event(2))
+
+#event.listen(Group, 'after_delete', photo_deleted)
+#event.listen(Group, 'after_insert', photo_deleted)
+#event.listen(Group, 'after_update', photo_deleted)

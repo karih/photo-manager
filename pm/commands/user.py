@@ -67,6 +67,12 @@ def change_password(args):
     print("Password set to %s" % password)
     db.commit()
 
+def summary(args):
+    print(" uid  | username             | # of files") 
+    print("-----------------------------------------") 
+    for user in models.User.query.all():
+        print(" %-4d | %-20s | %-5d" % (user.id, user.username, len(user.files)))
+
 
 def main(*args):
     commands = {
@@ -74,7 +80,7 @@ def main(*args):
         'password' : change_password,
         #'rmuser' : rmuser,
         #'password' : password,
-        #'summary' : summary
+        'summary' : summary
     }
 
     parser = argparse.ArgumentParser()

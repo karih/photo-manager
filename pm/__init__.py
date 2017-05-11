@@ -5,6 +5,7 @@ import logging
 
 import flask
 
+import elasticsearch
 import sqlalchemy as sa
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -32,6 +33,9 @@ db = scoped_session(sessionmaker(bind=db_engine))
 Base = declarative_base()
 Base.query = db.query_property()
 
+es = elasticsearch.Elasticsearch(app.config["ELASTICSEARCH_HOSTS"], timeout=20)
+redis = redispy.from_url(app.config["REDIS_URI"])
+
 from . import models
 from . import views
 from . import api
@@ -45,5 +49,3 @@ def configure_proxy():
         else:
             app.config["USE_X_ACCEL"] = False
 
-connections.create_connection(hosts=app.config["ELASTICSEARCH_HOSTS"], timeout=20)
-redis = redispy.from_url(app.config["REDIS_URI"])

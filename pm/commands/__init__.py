@@ -4,11 +4,11 @@ from . import scan
 from . import resetdb
 from . import user
 #from . import group
-#from . import reindex
+from . import resetindex
 #from . import build_cache
 #from . import verify_integrity
 
-commands = ['run', 'resetdb', 'scan', 'user', ]
+commands = ['run', 'resetdb', 'scan', 'user', 'resetindex', ]
 try:
     from . import debug
     commands.append('debug')

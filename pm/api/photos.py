@@ -4,11 +4,9 @@ import datetime
 import logging
 from flask import jsonify, Response, request, url_for, abort
 import elasticsearch as es
-import elasticsearch_dsl as esd
 
 import pm
 from .. import app, db
-from ..search.documents import PhotoDocument, GroupDocument
 from ..search.searches import PhotoSearch
 from ..models import Photo
 

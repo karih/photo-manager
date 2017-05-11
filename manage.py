@@ -5,7 +5,7 @@ import pm.commands as cmd
 
 if __name__ == "__main__":
 
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.basicConfig(format="%(asctime)s %(levelname)7s: %(message)s", level=logging.DEBUG, datefmt='%H:%M:%S')
 
     commands = [c for c in cmd.__all__ if not c.startswith("_")]
 
