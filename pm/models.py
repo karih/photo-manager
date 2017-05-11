@@ -40,6 +40,30 @@ def model_iterator(query, pre=None, post=None):
             post(offset=offset, limit=limit, rows=rows)
 
 
+user_files_association_table = sa.Table('users_files', Base.metadata,
+    sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id')),
+    sa.Column('file_id', sa.Integer, sa.ForeignKey('files.id'))
+)
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    username = sa.Column(sa.String(1000), nullable=False, unique=True)
+    password = sa.Column(sa.String(1000), nullable=False) # sha512 hexdigest
+
+    files = relationship("File", back_populates="users", secondary=user_files_association_table)
+
+    def set_password(self, password):
+        from passlib.hash import scrypt
+        self.password = scrypt.hash(password)
+
+    def verify_password(self, password):
+        from passlib.hash import scrypt
+        return scrypt.verify(password, self.password)
+
+
 class File(Base):
     __tablename__ = 'files'
 
@@ -59,6 +83,8 @@ class File(Base):
     photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
     photo = relationship("Photo", back_populates="files")
 
+    users = relationship("User", back_populates="files", secondary=user_files_association_table)
+
     @property
     def basename(self):
         return os.path.basename(self.path)
@@ -76,23 +102,24 @@ class File(Base):
 
 
 
-people_association_table = sa.Table('people_photos', Base.metadata,
-    sa.Column('people_id', sa.Integer, sa.ForeignKey('people.id')),
-    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
-)
 
-
-labels_association_table = sa.Table('labels_photos', Base.metadata,
-    sa.Column('label_id', sa.Integer, sa.ForeignKey('labels.id')),
-    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
-)
-
-
+#people_association_table = sa.Table('people_photos', Base.metadata,
+#    sa.Column('people_id', sa.Integer, sa.ForeignKey('people.id')),
+#    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
+#)
+#
+#
+#labels_association_table = sa.Table('labels_photos', Base.metadata,
+#    sa.Column('label_id', sa.Integer, sa.ForeignKey('labels.id')),
+#    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
+#)
 
 
 class Photo(Base):
     """ All information in this table is extracted from the image file itself,
-        none if it is editable in any interface.
+        none of it is editable in any interface.
+        This is an object that groups different files that correspond to the same photo,
+        if there exists a jpg and raw edition of the photo they will only have one Photo object.
     """
     __tablename__ = 'photos'
 
@@ -130,8 +157,8 @@ class Photo(Base):
     group_id = sa.Column(sa.Integer, sa.ForeignKey('groups.id'), nullable=True)
     group = relationship("Group", back_populates="photos")
 
-    people = relationship("Person", secondary=people_association_table, back_populates="photos")
-    labels = relationship("Label", secondary=labels_association_table, back_populates="photos")
+    #people = relationship("Person", secondary=people_association_table, back_populates="photos")
+    #labels = relationship("Label", secondary=labels_association_table, back_populates="photos")
 
     #primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
     #derivatives = relationship('PhotoDerivative', back_populates='orig')
@@ -147,16 +174,18 @@ class Photo(Base):
         return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.files[0].hash, actual_size[0], actual_size[1]))
 
     @property
-    def path(self):
+    def paths(self):
         return [f.path for f in self.files if f.deleted is False]
 
     @property
-    def basename(self):
+    def basenames(self):
         return sorted(list(set([f.basename for f in self.files])))
 
     @property
-    def dirname(self):
+    def dirnames(self):
         return sorted(list(set([f.dirname for f in self.files])))
+
+    
 
 #    def dct(self):
 #        return {
@@ -183,7 +212,7 @@ class Photo(Base):
 class Group(Base):
     ''' Group() is an entity corresponding to a single photo.
         If several versions of a photo exists, for example due to post processing
-        they are all linked to this single photo. '''
+        they are all linked to this single group. '''
     __tablename__ = 'groups'
         
     id = sa.Column(sa.Integer, primary_key=True)
@@ -195,22 +224,22 @@ class Group(Base):
             self.photos.append(photo)
 
 
-class Person(Base):
-    __tablename__ = "people"
-
-    id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.Unicode(255), nullable=False)
-
-    photos = relationship("Photo", secondary=people_association_table, back_populates="people")
-
-
-class Label(Base):
-    __tablename__ = "labels"
-
-    id = sa.Column(sa.Integer, primary_key=True)
-    label = sa.Column(sa.Unicode(255), nullable=False)
-
-    photos = relationship("Photo", secondary=labels_association_table, back_populates="labels")
+#class Person(Base):
+#    __tablename__ = "people"
+#
+#    id = sa.Column(sa.Integer, primary_key=True)
+#    name = sa.Column(sa.Unicode(255), nullable=False)
+#
+#    photos = relationship("Photo", secondary=people_association_table, back_populates="people")
+#
+#
+#class Label(Base):
+#    __tablename__ = "labels"
+#
+#    id = sa.Column(sa.Integer, primary_key=True)
+#    label = sa.Column(sa.Unicode(255), nullable=False)
+#
+#    photos = relationship("Photo", secondary=labels_association_table, back_populates="labels")
 
 
 #class PhotoDerivative(Base):
