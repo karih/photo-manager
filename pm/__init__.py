@@ -49,3 +49,25 @@ def configure_proxy():
         else:
             app.config["USE_X_ACCEL"] = False
 
+
+@app.before_request
+def authenticate():
+    if "sid" in flask.request.cookies:
+        session_id = flask.request.cookies["sid"]
+    elif "X-SESSION-ID" in flask.request.headers:
+        session_id = flask.headers["X-SESSION-ID"]
+    else:
+        session_id = None
+
+    if session_id is not None:
+        try:
+            flask.g.session = models.Session.get_session(session_id)
+            flask.g.user = flask.g.session.user
+            return
+        except ValueError as e:
+            # sesssion is not valid
+            pass
+    flask.g.session = None
+    flask.g.user = None
+
+

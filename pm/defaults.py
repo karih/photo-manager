@@ -67,6 +67,10 @@ SEARCH_EXCLUDE_FILES = [
     r'.*?\/[Aa]lbum[Aa]rt[^\/]*'
 ]
 
+# Cookie things
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_PATH = '/'
+SESSION_COOKIE_SECURE = False
 
 # Photo sizes
 THUMB_SIZE = 256, 256

@@ -14,7 +14,7 @@ from sqlalchemy.dialects.postgresql import UUID, HSTORE, JSON
 from sqlalchemy.sql import func
 from sqlalchemy import event
 
-from . import app, Base, helpers, es
+from . import app, db, Base, helpers, es
 
 FORMAT_EXTENSIONS = (
     ('JPG', ('jpg', 'jpeg')), 
@@ -53,12 +53,15 @@ class User(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     username = sa.Column(sa.String(1000), nullable=False, unique=True)
     password = sa.Column(sa.String(1000), nullable=False)
+    totp = sa.Column(sa.String(1000), nullable=True)
+    admin = sa.Column(sa.Boolean, default=False, nullable=True)
 
     last_movement       = sa.Column(sa.DateTime, nullable=True)
     last_authentication = sa.Column(sa.DateTime, nullable=True)
     last_pw_change      = sa.Column(sa.DateTime, nullable=True)
 
     files = relationship("File", back_populates="users", secondary=user_files_association_table)
+    sessions = relationship("Session", back_populates="user")
 
     def set_password(self, password):
         from passlib.hash import scrypt
@@ -67,6 +70,57 @@ class User(Base):
     def verify_password(self, password):
         from passlib.hash import scrypt
         return scrypt.verify(password, self.password)
+
+    @classmethod
+    def authenticate(cls, username, password):
+        user = cls.query.filter(cls.username==username).first()
+        if user.verify_password(password):
+            return user
+        else:
+            raise ValueError("Invalid username/password combination")
+
+
+class Session(Base):
+    __tablename__ = 'session'
+
+    id  = sa.Column(sa.Integer, primary_key=True)
+    key = sa.Column(sa.String(1000), nullable=False, unique=True)
+    
+    created = sa.Column(sa.DateTime, nullable=False)
+    expires = sa.Column(sa.DateTime, nullable=False)
+    active = sa.Column(sa.Boolean, default=False, nullable=False)
+
+    user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), nullable=True)
+    user = relationship("User", back_populates="sessions")
+
+    @classmethod
+    def get_session(cls, session_key):
+        session = cls.query.filter(cls.key == session_key)\
+            .filter(cls.active==True)\
+            .filter(cls.created<=datetime.datetime.now())\
+            .filter(cls.expires>=datetime.datetime.now()).first()
+        if session is not None:
+            return session
+        else:
+            raise ValueError("No such session %s" % session_key)
+
+    @classmethod
+    def create_session(cls, user):
+        import uuid
+        session = Session(
+            key=str(uuid.uuid4()),
+            active=True,
+            user=user,
+            created=datetime.datetime.now(),
+            expires=datetime.datetime.now()+datetime.timedelta(days=7)
+        )
+        db.add(session)
+        db.commit()
+        return session
+
+    def destroy(self):
+        self.active=False
+        db.commit()
 
 
 class File(Base):
