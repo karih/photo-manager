@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base href="/">
+    <meta charset="utf-8">
+
+    <title>photo manager</title>
+
+    <!-- boostrap and friends -->
+    <link href="{{ url_for('static', filename='js/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+
+  </head>
+
+  <body>
+    <a href="/l">Library view</a>
+    {% if not logged_in %}
+      <form action="/login" method="post">
+        <input type="text" name="username" />
+        <input type="password" name="password" />
+        <input type="submit" name="submit" value="Login" />
+      </form>
+    {% else %}
+      <form action="/logout" method="post">
+        <input type="submit" name="submit" value="Logout" />
+      </form>
+    {% endif %}
+
+  </body>
+</html>

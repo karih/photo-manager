@@ -39,6 +39,7 @@ redis = redispy.from_url(app.config["REDIS_URI"])
 from . import models
 from . import views
 from . import api
+from . import auth
 
 @app.before_request
 def configure_proxy():
@@ -50,24 +51,5 @@ def configure_proxy():
             app.config["USE_X_ACCEL"] = False
 
 
-@app.before_request
-def authenticate():
-    if "sid" in flask.request.cookies:
-        session_id = flask.request.cookies["sid"]
-    elif "X-SESSION-ID" in flask.request.headers:
-        session_id = flask.headers["X-SESSION-ID"]
-    else:
-        session_id = None
-
-    if session_id is not None:
-        try:
-            flask.g.session = models.Session.get_session(session_id)
-            flask.g.user = flask.g.session.user
-            return
-        except ValueError as e:
-            # sesssion is not valid
-            pass
-    flask.g.session = None
-    flask.g.user = None
-
+app.before_request(auth.authenticate)
 

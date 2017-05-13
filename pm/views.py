@@ -6,17 +6,6 @@ from .models import User, File, Session
 from .helpers import send_file
 
 
-@app.route('/library')
-@app.route('/library/<path:path>')
-def library(path=None):
-    """ The library site """
-    return render_template('library.html')
-
-
-@app.route('/')
-def index():
-    """ The index site """
-    return render_template('index.html', logged_in=g.user is not None, username=g.user.username if g.user else None)
 
 @app.route('/login', methods=["POST"])
 def login():
@@ -57,3 +46,38 @@ def image_file(id, size):
         return send_file(app, img.files[0].path, as_attachment=True, attachment_filename=img.basename)
     else:
         return send_file(app, getattr(img, 'path_%s' % size))
+
+@app.route('/s/<album_set>')
+def view_album_set(album_set):
+    # view a set of albums
+    pass
+
+@app.route('/a/<album_shortname>/download')
+def album_download(album_shortname):
+    # direct download of an album as tar.gz/zip
+    # option: format - specific format
+    # option: highres - include originals where allowed
+    pass
+
+@app.route('/a/<album_shortname>')
+def view_album(album_shortname):
+    # view an album
+    pass
+
+@app.route('/i/<share_key>')
+def view_image(share_key):
+    # direct link to an image (displayed inside some html)
+    pass
+
+
+
+@app.route('/')
+def index():
+    """ The index site """
+    return render_template('index.html', logged_in=g.user is not None, username=g.user.username if g.user else None)
+
+@app.route('/l')
+@app.route('/l/<path:path>')
+def library(path=None):
+    """ The library site """
+    return render_template('library.html')
