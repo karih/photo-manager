@@ -1,0 +1,32 @@
+/* IMAGE BLOCKS */
+.img-outer { display: inline-block; }
+
+.img-block { background-color: #EEE; padding: 0; display: inline-block; }
+.img-block:hover {  background-color: orange; }
+.img-block.expanded { background-color: red; }
+
+
+.img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; }
+.img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
+.img-text p { height: 100%; vertical-align: middle; text-align: center; }
+
+.img-block img { vertical-align: middle; } 
+
+.photo-list .img-outer { width: 280px; height: 300px; }
+.photo-list .img-block { margin: 5px; width: 270px; height: 290px; }
+.photo-list .img-inner { top: 7px; left: 7px; width: 256px; height: 256px; }
+.photo-list .img-text { margin: 7px 7px 0 7px; height: 20px; }
+.photo-list .img-block img { max-width: 256px; max-height: 256px; }
+
+.photo-single .img-outer { margin: 0px; width: 820px; height: 800px; }
+.photo-single .img-block { margin: 0px 10px; width: 800px; height: 800px; }
+.photo-single .img-inner { top: 0px; left: 0px; width: 800px; height: 800px; }
+.photo-single .img-block img { max-width: 800px; max-height: 800px; border-width: 0px;  }
+
+.photo-single .img-outer { float: left; }
+.photo-single .properties, .photo-single .labels, .photo-single .people, .photo-single .rass, .photo-single .typpi { margin-left: 820px; }
+.photo-single .properties .panel { margin-top: 0px; }
+.photo-single .panel { margin: 10px; }
+.photo-single .panel-body:after { clear: none; }
+
+div.photo-list { position: relative; }

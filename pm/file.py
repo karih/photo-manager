@@ -106,6 +106,18 @@ def seq_file_to_photo():
             db.add(photo)
 
 
+def seq_create_thumbnails():
+    """ Ensure every photo object has a corresponding thumbnail """
+
+    def pre(offset, limit, rows):
+        logging.debug("validate_thumbnails: starting batch %d-%d/%d" % (offset, offset+limit, rows))
+
+    for photo in models.model_iterator(models.Photo.query, pre, lambda **kwargs: db.commit()):
+        image_processing.create_photo_thumbnails(photo)
+
+###############################
+""" not gone through review """
+
 def seq_update_exif():
     def pre(offset, limit, rows):
         logging.debug("file_to_photo: starting batch %d-%d/%d" % (offset, offset+limit, rows))
@@ -117,8 +129,8 @@ def seq_update_exif():
         ):
         update_exif(photo)
 
-
 def update_exif(photo_obj, commit=False):
+    raise Exception("Funky implementation")
     metadata = photo_obj 
 
     for key, val in metadata.get_dict().items():
@@ -126,9 +138,6 @@ def update_exif(photo_obj, commit=False):
 
     if commit:
         db.commit()
-
-
-""" not gone through review """
 
 def check_for_deletion(file):
     def file_is_filtered(path):
@@ -179,12 +188,4 @@ def scan_for_deleted_files():
 
 
 
-def validate_thumbnails():
-    """ Ensure every photo object has a corresponding thumbnail """
-
-    def pre(offset, limit, rows):
-        logging.debug("validate_thumbnails: starting batch %d-%d/%d" % (offset, offset+limit, rows))
-
-    for photo in models.model_iterator(models.Photo.query, pre):
-        image_processing.create_photo_thumbnails(photo)
 

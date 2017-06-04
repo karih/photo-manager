@@ -27,6 +27,7 @@ def main(*args):
     #options = parser.parse_args(args)
 
     scan_new_files = True
+    run_through_exif = False
 
     if scan_new_files:
         ### Scan for new files
@@ -38,9 +39,10 @@ def main(*args):
         # object or attach to an existing one
         file.seq_file_to_photo() 
         # Next up, creating thumbnails 
+        file.seq_create_thumbnails()
 
         # Finally, build directory cache
-    elif run_through_exif:
+    if run_through_exif:
         ### Update photo object exif information
         file.seq_update_exif()
         pass

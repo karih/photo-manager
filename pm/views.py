@@ -2,7 +2,7 @@ import os.path
 
 from flask import make_response, redirect, render_template, Response, abort, request, g
 from . import app
-from .models import User, File, Session
+from .models import User, File, Session, Photo
 from .helpers import send_file
 
 

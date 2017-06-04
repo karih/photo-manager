@@ -334,8 +334,10 @@ class Group(Base):
 ### EVENTS
 def photo_event(type):
     def inner(mapper, connection, target):
-        if type in (0, 1):
-            (es.index if type == 1 else es.create)(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body=target.get_document())
+        if type == 0:
+            es.create(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body=target.get_document())
+        elif type == 1:
+            es.update(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body={'doc' : target.get_document()})
         else:
             es.delete(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id)
     return inner

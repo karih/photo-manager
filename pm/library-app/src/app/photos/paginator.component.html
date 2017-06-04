@@ -1,0 +1,17 @@
+<div class="btn-group" role="group">
+  <button type="button" class="btn btn-outline-primary" [class.disabled]="previous_offset === null" (click)="changePage(previous_offset)">&laquo;</button>
+  <button type="button" class="btn btn-outline-primary" *ngFor="let page of pages"  [class.disabled]="page.disabled" (click)="changePage(page.offset)"><span *ngIf="page.seq">{{ page.page }}</span><span *ngIf="!page.seq">...</span></button>
+  <button type="button" class="btn btn-outline-primary" [class.disabled]="next_offset === null" (click)="changePage(next_offset)">&raquo;</button>
+</div>
+
+<!--
+<nav aria-label="Page navigation example" style="display: inline" >
+  <ul class="pagination" style="display: inline" >
+    <li class="page-item" [class.disabled]="previous_offset === null"><button class="page-link" (click)="changePage(previous_offset)">&laquo;</button></li>
+    <li class="page-item" *ngFor="let page of pages"  [class.disabled]="page.disabled">
+      <button class="page-link" (click)="changePage(page.offset)"><span *ngIf="page.seq">{{ page.page }}</span><span *ngIf="!page.seq">...</span></button>
+    </li>
+    <li class="page-item" [class.disabled]="next_offset === null"><button type="button" class="page-link" (click)="changePage(next_offset)">&raquo;</button></li>
+  </ul>
+</nav>
+-->

@@ -2,3 +2,24 @@
 *.pyc
 flask.log
 pm/devconfig.py
+
+# compiled output
+pm/library-app/dist
+pm/library-app/tmp
+pm/library-app/out-tsc
+
+# dependencies
+pm/library-app/node_modules
+
+# misc
+pm/library-app/.sass-cache
+pm/library-app/connect.lock
+pm/library-app/coverage
+pm/library-app/libpeerconnection.log
+npm-debug.log
+testem.log
+pm/library-app/typings
+
+# e2e
+pm/library-app/e2e/*.js
+pm/library-app/e2e/*.map

@@ -11,7 +11,7 @@ def create_photo_thumbnails(photo):
         logging.debug("Creating thumbnails")
         thumbs = [(app.config["LARGE_SIZE"], photo.path_large), (app.config["THUMB_SIZE"], photo.path_thumb)]
 
-        create_thumbnails(photo.path[0], thumbs)
+        create_thumbnails(photo.paths[0], thumbs)
 
         if app.config["SAVE_MASK"] is not None:
             os.chmod(photo.path_large, app.config["SAVE_MASK"])
