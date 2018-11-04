@@ -53,14 +53,14 @@ class User(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     username = sa.Column(sa.String(1000), nullable=False, unique=True)
     password = sa.Column(sa.String(1000), nullable=False)
-    totp = sa.Column(sa.String(1000), nullable=True)
+    totp  = sa.Column(sa.String(1000), nullable=True)
     admin = sa.Column(sa.Boolean, default=False, nullable=True)
 
     last_movement       = sa.Column(sa.DateTime, nullable=True)
     last_authentication = sa.Column(sa.DateTime, nullable=True)
     last_pw_change      = sa.Column(sa.DateTime, nullable=True)
 
-    files = relationship("File", back_populates="users", secondary=user_files_association_table)
+    files    = relationship("File", back_populates="users", secondary=user_files_association_table)
     sessions = relationship("Session", back_populates="user")
 
     def set_password(self, password):
@@ -138,6 +138,8 @@ class File(Base):
     hash = sa.Column(sa.String(128), nullable=False) # sha512 hexdigest
     format = sa.Column(sa.SmallInteger, nullable=False)
     size = sa.Column(sa.Integer, nullable=False)
+    width = sa.Column(sa.SmallInteger, nullable=False)
+    height = sa.Column(sa.SmallInteger, nullable=False)
 
     photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
     photo = relationship("Photo", back_populates="files")
@@ -177,14 +179,12 @@ class File(Base):
 class Photo(Base):
     """ All information in this table is extracted from the image file itself,
         none of it is editable in any interface.
-        This is an object that groups different files that correspond to the same photo,
+        This is an object that groups different files that correspond to the same photo (same shutter opening),
         if there exists a jpg and raw edition of the photo they will only have one Photo object.
     """
     __tablename__ = 'photos'
 
     id = sa.Column(sa.Integer, primary_key=True)
-    width = sa.Column(sa.SmallInteger, nullable=False)
-    height = sa.Column(sa.SmallInteger, nullable=False)
 
     # most important exif data
     date = sa.Column(sa.DateTime, nullable=True) # exif timestamp
@@ -290,9 +290,10 @@ class Photo(Base):
 
 
 class Group(Base):
-    ''' Group() is an entity corresponding to a single photo.
-        If several versions of a photo exists, for example due to post processing
-        they are all linked to this single group. '''
+    ''' 
+        Group() is an entity corresponding to a single shutter press button.
+        Can be a bracketing group or just a continuous burst shot.
+    '''
     __tablename__ = 'groups'
         
     id = sa.Column(sa.Integer, primary_key=True)

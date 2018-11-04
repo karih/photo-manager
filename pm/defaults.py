@@ -72,6 +72,24 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_PATH = '/'
 SESSION_COOKIE_SECURE = False
 
-# Photo sizes
+# Photo sizes - here we reuse flickr sizes
+# - https://www.flickr.com/services/api/misc.urls.html
+# tuple is (widthx, widthy, cut to size, jpg compression)
+# by default, all sizes are considered for computer/web use and are exported in the sRGB color space
+# only original photos may be in other color spaces
+SIZES = {
+    's' : (75,   75,   True , 0.95), 
+    'q' : (150,  150,  True , 0.95),
+    't' : (100,  100,  False, 0.95), 
+    'm' : (240,  240,  False, 0.95), 
+    'n' : (320,  320,  False, 0.95), 
+    'l' : (500,  500,  False, 0.95),
+    'z' : (800,  800,  False, 0.95),
+    'c' : (1024, 1024, False, 0.95),
+    'h' : (1600, 1600, False, 0.95),
+    'k' : (2048, 2048, False, 0.95),
+    'o' : (None, None, False, 0.95) # original
+}
+
 THUMB_SIZE = 256, 256
 LARGE_SIZE = 800, 800
