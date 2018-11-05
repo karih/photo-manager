@@ -1,9 +1,0 @@
-{
-  "name": "photo-manager",
-  "private": true,
-	"dependencies": {
-		"bootstrap": "latest",
-		"angular": "1.5.8",
-		"angular-ui-router": "1.0.0-beta.3"
-	}
-}

@@ -1,54 +1,115 @@
-var app = angular.module('pm', ['ui.router']).config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$urlMatcherFactoryProvider', '$rootScopeProvider', 
-	function($stateProvider, $locationProvider, $urlRouterProvider, $urlMatcherFactoryProvider, $rootScopeProvider) {
-		//$rootScopeProvider.digestTtl(20); // for the tree recursion
 
-    $urlMatcherFactoryProvider.type("nonURIEncoded", {
-        encode: function(val) { return val != null ? val.toString() : val; },
-        decode: function(val) { return val != null ? val.toString() : val; },
-        is: function(val) { return true; }
-    });
+'use strict';
 
-		$stateProvider
-			.state('photos', {
-				url: '/photos?{offset:int}&{limit:int}&date&aperture&exposure&focal_length&focal_length_35&iso&make&model&lens&dirname&sort&{dnv:int}&{group:bool}&{mv:int}&{lv:int}&{dv:int}&{id:int}',
-				templateUrl: '/static/partials/photos/photos.html',
-				controller: 'PhotosOverviewCtrl',
-				params: {
-					offset: {dynamic: true, value: null}, 
-					limit: {dynamic: true, value: null},
-					group: {dynamic: true, value: false}, // dirname view state
-					aperture: {dynamic: true, value: null},
-					exposure: {dynamic: true, value: null},
-					focal_length: {dynamic: true, value: null},
-					focal_length_35: {dynamic: true, value: null},
-					sort: {dynamic: true, value: null}, 
-					iso: {dynamic: true, value: null},
-					make: {dynamic: true, value: null},
-					model: {dynamic: true, value: null, replace: [{from: '', to: ''}]},
-					mv: {dynamic: true, value: 0}, // model view state
-					lens: {dynamic: true, value: null, replace: [{from: '', to: ''}]},
-					lv: {dynamic: true, value: 0}, // lens view state
-					dirname: {dynamic: true, value: "/", replace: [{from: '', to: '/'}]},
-					dnv: {dynamic: true, value: 0}, // dirname view state
-					date: {dynamic: true, value: null, replace: [{from: '', to: ''}]},
-					dv: {dynamic: true, value: 0}, // date view state
-					id: {dynamic: true, value: null}, 
-				}
-			});
-			//.state('photos.details', {
-			//	url: '?{id:int}',
-			//	templateUrl: '/static/partials/photos/single.html',
-			//	controller: 'PhotoCtrl',
-			//	onEnter: scrollToTop,
-			//	params: {
-			//	}
-			//});
-
-		$urlRouterProvider.otherwise('/photos');
+class Header extends React.Component {
+	render() {
+    return (<header>
+      <nav className="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a className="navbar-brand" href="/l">Photo Library</a>
+        <div className="collapse navbar-collapse">
+          <ul className="navbar-nav mr-auto">
+            <li className="nav-item"><a className="nav-link" href="/l">Photos</a></li>
+          </ul>
+        </div>
+      </nav>
+    </header>)
+	}
+}
 
 
-		$locationProvider.html5Mode(true);
-}]).run(['$transitions', function($transitions) {
-	$transitions.onSuccess({to: 'photos.details'}, function() { });
-}]);
+/* 
+ *
+ * NAEST: 
+ * * LESA INN URL og greina view og state variables
+ * * UPPFAERA url on state change
+ * * PREVENTA redirect ef base urlid er ekki ad breytast 
+ * * GERA DATE filter
+ * * TENGJAST bakenda
+ */
 
+
+class App extends React.Component {
+	constructor(props) {
+		super(props);
+
+		this.state_vars = {
+			sort:   {type: "dual", values: ["asc", "desc"]},
+			offset: {type: "int", default: 0},
+			limit:  {type: "int", default: 20},
+		}
+		
+		var global_state = new URLSearchParams(window.location.search);
+			
+		this.state = {
+			sort: global_state.has("sort") && ["asc", "desc"].includes(global_state.get("sort")) ? global_state.get("sort") : "asc",
+		}
+
+	}
+
+
+	updateState(variable, value) {
+		console.log("updateState(", variable, ",", value, ")");
+		var obj = {}
+		obj[variable] = value
+		this.setState(obj);
+		var global_state = new URLSearchParams(window.location.search);
+		global_state.set(variable, value);
+		window.location.search = global_state.toString();
+
+	}
+
+	onChangeState(variable, value) {
+		console.log("onChangeState(", variable, ",", value, ")");
+
+		if (!this.state_vars.hasOwnProperty(variable)) {
+			console.log("Tried to set invalid state variable", variable, "to value", value)
+			return
+		}
+		
+		if (typeof(value) == "undefined") {
+			// now value was passed
+			if (this.state_vars[variable].hasOwnProperty("bool") && this.state_vars[variable].bool === true) {
+				this.updateState(variable, this.state_vars[variable].values[1 - this.state_vars[variable].values.indexOf(this.state[variable])]);
+			} else {
+				console.log("reached else A");
+			}
+		} else {
+			console.log("reached else B");
+		}
+	}
+	
+	/*
+	changeSort() {
+		var global_state = new URLSearchParams(window.location.search);
+		if (this.state.sort == "asc") {
+			this.setState({sort: "desc"});
+			global_state.set("sort", "desc");
+		} else {
+			this.setState({sort: "asc"});
+			global_state.set("sort", "asc");
+		}
+		window.location.search = global_state.toString();
+	}
+	*/
+
+	onChangeView(new_view) { }
+
+	test() {
+		this.setState({sort: "desc"});
+	}
+
+	render() {
+		return (
+			<div>
+				<Header />
+				<div className="container-fluid">
+					<div className="row">
+						<PhotoOverview onChangeState={(...args) => this.onChangeState(...args)} state={this.state} />
+					</div>
+				</div>
+				<button type="button" onClick={() => this.test()}>test test</button>
+				<p> state is {JSON.stringify(this.state)}</p>
+			</div>
+		)
+	}
+}

@@ -110,8 +110,6 @@ class PhotoExif(object):
 
         return inner
 
-    
-
     @property
     def width(self):
         return first(i["ImageWidth"] for i in self.exiftool_info())

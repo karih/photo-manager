@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base href="/">
+    <meta charset="utf-8">
+
+    <title>login</title>
+
+    <link href="{{ url_for('static', filename='js/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+
+  </head>
+
+  <body>
+    {% if not logged_in %}
+      <form action="/login" method="post">
+        Username: <input type="text" name="username" />
+        Password: <input type="password" name="password" />
+        <input type="submit" name="submit" value="Login" />
+      </form>
+    {% else %}
+      <form action="/logout" method="post">
+        <input type="submit" name="submit" value="Logout" />
+      </form>
+    {% endif %}
+  </body>
+</html>

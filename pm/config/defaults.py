@@ -91,5 +91,3 @@ SIZES = {
     'o' : (None, None, False, 0.95) # original
 }
 
-THUMB_SIZE = 256, 256
-LARGE_SIZE = 800, 800

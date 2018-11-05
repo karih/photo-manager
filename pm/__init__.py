@@ -11,8 +11,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
-from elasticsearch_dsl.connections import connections
-
 import redis as redispy
 
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", filename='flask.log', level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
@@ -20,12 +18,12 @@ logging.getLogger().addHandler(logging.StreamHandler())
 
 app = flask.Flask(__name__)
 
-app.config.from_object('pm.defaults')
+app.config.from_object('pm.config.defaults')
 
 if 'PM_CONFIG' in os.environ:
     app.config.from_envvar('PM_CONFIG')
 else:
-    app.config.from_object('pm.devconfig')
+    app.config.from_object('pm.config.devconfig')
 
 
 db_engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"], echo=False)

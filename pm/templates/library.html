@@ -1,57 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="pm"> <!-- ng-controller="MainCtrl as main">-->
+<html lang="en"> <!-- ng-controller="MainCtrl as main">-->
   <head>
     <base href="/l/">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>photo manager</title>
 
-    <!-- boostrap and friends -->
-    <link href="{{ url_for('static', filename='js/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
 
   </head>
 
-  <body ng-cloak>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/">Photos</a>
-        </div>
+  <body>
+    <div id="app"> </div> 
 
-        <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <!--<li ui-sref-active="{ 'active': 'file-manager' }"><a ui-sref="file-manager.tree">Files</a></li>-->
-            <li ui-sref-active="{ 'active': 'photos' }"><a ui-sref="photos({offset: 0, id: null})">Photos</a></li>
-            <li><a ui-sref="publishing-manager-overview">Publishing Manager</a></li>
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Other Pages <span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="#">Duplicate File List</a></li>
-                <li><a href="#">Error Logs</a></li>
-                <li><a href="#">Users</a></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
-    <div id="content" class="container-fluid" ui-view></div>
-
-    <script src="{{ url_for('static', filename='js/angular/angular.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/angular-ui-router/release/angular-ui-router.min.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='js/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap/dist/js/bootstrap.min.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
-    <script src="{{ url_for('static', filename='main.controllers.js') }}"></script>
-    <script src="{{ url_for('static', filename='photos.js') }}"></script>
-    <script src="{{ url_for('static', filename='filters.js') }}"></script>
-    <script src="{{ url_for('static', filename='directives.js') }}"></script>
-    <script src="{{ url_for('static', filename='facets.js') }}"></script>
-    <script src="{{ url_for('static', filename='filesystem-directives.js') }}"></script>
+    <script crossorigin src="https://unpkg.com/react/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel" src="{{ url_for('static', filename='photos.js' ) }}"></script>
+    <script type="text/babel" src="{{ url_for('static', filename='app.js' ) }}"></script>
+    <script type="text/babel" src="{{ url_for('static', filename='script.js' ) }}"></script>
 
   </body>
 </html>

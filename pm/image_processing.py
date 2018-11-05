@@ -6,6 +6,7 @@ import wand
 
 from . import app, helpers
 
+
 def create_photo_thumbnails(photo):
     if not os.path.exists(photo.path_large) or not os.path.exists(photo.path_thumb):
         logging.debug("Creating thumbnails")

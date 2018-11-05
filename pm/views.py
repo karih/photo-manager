@@ -6,26 +6,28 @@ from .models import User, File, Session, Photo
 from .helpers import send_file
 
 
-
 @app.route('/login', methods=["POST"])
 def login():
     username = request.form["username"]
     password = request.form["password"]
+    redirect_uri = request.args.get("redirect", request.headers.get("referer", None))
 
     try:
         user = User.authenticate(username, password)
         session = Session.create_session(user)
-        response = make_response("logged in")
+        response = make_response("logged in -- no redirect url or referer header" if redirect_uri is None else redirect(redirect_uri))
         response.set_cookie("sid", session.key, 
             secure  =app.config["SESSION_COOKIE_SECURE"],
             path    =app.config["SESSION_COOKIE_PATH"],
             httponly=app.config["SESSION_COOKIE_HTTPONLY"]
         )
         return response
-    except ValueError as e:
-        return redirect('/', code=302) 
 
-@app.route('/logout', methods=["POST"])
+    except ValueError as e:
+        return render_template('login.html', error="Invalid username/password")
+
+
+@app.route('/logout', methods=["GET", "POST"])
 def logout():
     g.session.destroy()
     return redirect('/', code=302) 
@@ -46,6 +48,7 @@ def image_file(id, size):
         return send_file(app, img.files[0].path, as_attachment=True, attachment_filename=img.basename)
     else:
         return send_file(app, getattr(img, 'path_%s' % size))
+
 
 @app.route('/s/<album_set>')
 def view_album_set(album_set):
@@ -69,15 +72,16 @@ def view_image(share_key):
     # direct link to an image (displayed inside some html)
     pass
 
-
+@app.route('/l')
+@app.route('/l/<path:path>')
+def library(path=None):
+    """ The library site """
+    if g.user is None:
+        return render_template('login.html')
+    else:
+        return render_template('library.html')
 
 @app.route('/')
 def index():
     """ The index site """
     return render_template('index.html', logged_in=g.user is not None, username=g.user.username if g.user else None)
-
-@app.route('/l')
-@app.route('/l/<path:path>')
-def library(path=None):
-    """ The library site """
-    return render_template('library.html')

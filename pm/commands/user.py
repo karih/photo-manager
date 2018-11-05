@@ -50,7 +50,11 @@ def add_user(args):
                 user.username=username
                 break
 
-    password = random_password()
+    if len(args) > 1:
+        password = args[1]
+    else:
+        password = random_password()
+
     user.set_password(password)
     print("Password set to %s" % password)
     db.add(user)

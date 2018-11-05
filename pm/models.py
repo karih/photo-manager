@@ -88,7 +88,7 @@ class Session(Base):
     
     created = sa.Column(sa.DateTime, nullable=False)
     expires = sa.Column(sa.DateTime, nullable=False)
-    active = sa.Column(sa.Boolean, default=False, nullable=False)
+    active_flag = sa.Column(sa.Boolean, default=False, nullable=False)
 
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), nullable=True)
     user = relationship("User", back_populates="sessions")
@@ -96,7 +96,7 @@ class Session(Base):
     @classmethod
     def get_session(cls, session_key):
         session = cls.query.filter(cls.key == session_key)\
-            .filter(cls.active==True)\
+            .filter(cls.active_flag==True)\
             .filter(cls.created<=datetime.datetime.now())\
             .filter(cls.expires>=datetime.datetime.now()).first()
         if session is not None:
@@ -109,7 +109,7 @@ class Session(Base):
         import uuid
         session = Session(
             key=str(uuid.uuid4()),
-            active=True,
+            active_flag=True,
             user=user,
             created=datetime.datetime.now(),
             expires=datetime.datetime.now()+datetime.timedelta(days=7)
@@ -119,7 +119,7 @@ class Session(Base):
         return session
 
     def destroy(self):
-        self.active=False
+        self.active_flag=False
         db.commit()
 
 
