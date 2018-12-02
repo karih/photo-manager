@@ -23,7 +23,7 @@ def scan_for_new_files():
         if not isinstance(users, (list, tuple)):
             users = [users, ]
 
-        users = [models.User.query.filter(models.User.username==u).first() if isinstance(u, str) else models.User.query.get(u) for u in users]
+        #users = [models.User.query.filter(models.User.username==u).first() if isinstance(u, str) else models.User.query.get(u) for u in users]
         for file_path in search_for_images(root):
             logging.debug("Scanning %s", file_path.encode('utf-8', 'replace').decode('utf-8'))
 
@@ -39,7 +39,6 @@ def scan_for_new_files():
                 stat = os.stat(file_path)
                 file = models.File(
                     path=file_path,
-                    format=models.File.extension_to_format_key(os.path.splitext(file_path)[1][1:]),
                     ctime=datetime.datetime.fromtimestamp(stat.st_ctime),
                     size=stat.st_size,
                     hash=hash
@@ -47,8 +46,8 @@ def scan_for_new_files():
 
                 db.add(file)
                 db.commit()
-                for user in users:
-                    file.users.append(user)
+                #for user in users:
+                #    file.users.append(user)
                 db.commit()
 
 def search_for_images(root_path):
@@ -104,7 +103,6 @@ def seq_file_to_photo():
             photo = models.Photo(**metadata.get_dict())
             file.photo = photo
             db.add(photo)
-
 
 def seq_create_thumbnails():
     """ Ensure every photo object has a corresponding thumbnail """
@@ -171,10 +169,6 @@ def check_for_deletion(file):
     return changed
 
 
-
-
-
-
 def scan_for_deleted_files():
     """ Scan the file registry for deleted files """
 
@@ -184,8 +178,4 @@ def scan_for_deleted_files():
     for file in models.model_iterator(models.File.query.filter(models.File.error == None).filter(models.File.deleted == False), pre, lambda **kwargs: db.commit()):
         if check_for_deletion(file):
             db.add(file)
-
-
-
-
 

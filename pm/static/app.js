@@ -36,6 +36,7 @@ class App extends React.Component {
 				view: (args, params, onChangeState) => <PhotoOverview onChangeState={(...args) => onChangeState(...args)} args={args} params={params} />, 
 				url: 'index',
 				params: {
+					q:      {type: "string", default: "*"},
 					sort:   {type: "dual", values: ["asc", "desc"], default: "asc"},
 					offset: {type: "int", default: 0},
 					limit:  {type: "int", default: 20},

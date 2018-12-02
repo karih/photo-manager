@@ -136,10 +136,7 @@ class File(Base):
     deleted = sa.Column(sa.Boolean, nullable=False, server_default='f', default=False) 
 
     hash = sa.Column(sa.String(128), nullable=False) # sha512 hexdigest
-    format = sa.Column(sa.SmallInteger, nullable=False)
     size = sa.Column(sa.Integer, nullable=False)
-    width = sa.Column(sa.SmallInteger, nullable=False)
-    height = sa.Column(sa.SmallInteger, nullable=False)
 
     photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
     photo = relationship("Photo", back_populates="files")
@@ -154,6 +151,14 @@ class File(Base):
     def dirname(self):
         return os.path.dirname(self.path)
 
+    @property
+    def extension(self):
+        return self.path.split(".")[-1]
+
+    @property
+    def format(self):
+        return self.extension_to_format_key(self.extension)
+
     @staticmethod
     def extension_to_format_key(ext):
         for i, (format, extensions) in enumerate(FORMAT_EXTENSIONS):
@@ -161,8 +166,12 @@ class File(Base):
                 return i
         raise ValueError("Unknown extension %s" % ext)
 
+    def get_path(self, size):
+        hash = m = hashlib.sha256()
+        hash.update(self.hash.encode('utf-8'))
+        hash.update((":".join(map(str, app.config['SIZES'][size]))).encode('utf-8'))
 
-
+        return os.path.join(app.config['TEMP_DIR'], 'file_%d_%s.jpg' % (self.id, hash.hexdigest()[:10]))
 
 #people_association_table = sa.Table('people_photos', Base.metadata,
 #    sa.Column('people_id', sa.Integer, sa.ForeignKey('people.id')),
@@ -185,6 +194,9 @@ class Photo(Base):
     __tablename__ = 'photos'
 
     id = sa.Column(sa.Integer, primary_key=True)
+
+    width = sa.Column(sa.SmallInteger, nullable=False)
+    height = sa.Column(sa.SmallInteger, nullable=False)
 
     # most important exif data
     date = sa.Column(sa.DateTime, nullable=True) # exif timestamp
@@ -211,7 +223,7 @@ class Photo(Base):
 
     ### foreign keys
     # here the ordering ensures the non-raw images are first (with lowest format number)
-    files = relationship("File", back_populates="photo", order_by="File.format")
+    files = relationship("File", back_populates="photo", order_by="desc(File.size)")
 
     group_id = sa.Column(sa.Integer, sa.ForeignKey('groups.id'), nullable=True)
     group = relationship("Group", back_populates="photos")
@@ -225,31 +237,25 @@ class Photo(Base):
     __document_name__ = "photo"
     __document__ = {
         "properties": {
-            "aperture": { "type": "float" }, 
-            "path": { "type": "string", "index": "not_analyzed" }, 
-            "date": { "type": "date" }, 
-            "basenames": { "type": "string", "index": "not_analyzed" }, 
-            "dirnames": { "type": "string", "index": "not_analyzed" }, 
-            "exposure": { "type": "float" }, 
-            "model": { "type": "string", "index": "not_analyzed" }, 
-            "iso": { "type": "integer" }, 
-            "lens": { "type": "string", "index": "not_analyzed" }, 
-            "focal_length": { "type": "float" }, 
-            "focal_length_35": { "type": "float" }, 
-            "size": { "type": "integer" },
-            "users": { "type": "integer" }
+            "id":              {"type": "integer" },
+            "paths":           {"type": "keyword" }, 
+            "basenames":       {"type": "keyword" }, 
+            "dirnames":        {"type": "keyword" }, 
+            "date":            {"type": "date" }, 
+            "file_id":         {"type": "integer" },
+
+            #"aperture":        { "type": "float" }, 
+            #"exposure":        { "type": "float" }, 
+            #"model":           { "type": "text", "index": "not_analyzed" }, 
+            #"iso":             { "type": "integer" }, 
+            #"lens":            { "type": "text", "index": "not_analyzed" }, 
+            #"focal_length":    { "type": "float" }, 
+            #"focal_length_35": { "type": "float" }, 
+            #"size":            { "type": "integer" },
+            #"users":           { "type": "integer" }
         }
     }
 
-    @property
-    def path_thumb(self):
-        actual_size = helpers.resize_dimensions((self.width, self.height), app.config["THUMB_SIZE"]) 
-        return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.files[0].hash, actual_size[0], actual_size[1]))
-
-    @property
-    def path_large(self):
-        actual_size = helpers.resize_dimensions((self.width, self.height), app.config["LARGE_SIZE"]) 
-        return os.path.join(app.config['TEMP_DIR'], "%s_%d_%d.jpg" % (self.files[0].hash, actual_size[0], actual_size[1]))
 
     @property
     def paths(self):
@@ -264,8 +270,16 @@ class Photo(Base):
         return sorted(list(set([f.dirname for f in self.files])))
 
     def get_document(self):
-        fields = ('width', 'height', 'date', 'dirnames', 'model', 'lens')
-        return {k: getattr(self, k) for k in fields}
+        return {
+            'id': self.id,
+            'date': self.date,
+            'dirnames': self.dirnames,
+            'basenames': self.basenames,
+            'paths': self.paths,
+            'file_id': self.files[0].id,
+        }
+        #fields = ('width', 'height', 'date', 'dirnames', 'model', 'lens')
+        #return {k: getattr(self, k) for k in fields}
 
 #    def dct(self):
 #        return {

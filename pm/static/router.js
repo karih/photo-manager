@@ -242,6 +242,7 @@ class Router {
 
 		if (obj.hasOwnProperty("params")) {
 			new_state.params = {}
+			self.params = JSON.parse(JSON.stringify(self.params));
 			Object.entries(obj.params).forEach(function ([key, val]) {
 				//console.log("param key", key, "val", val, "self.params", self.params, "all_params", params, "view", self.view);
 				let old_value = self.params[key];

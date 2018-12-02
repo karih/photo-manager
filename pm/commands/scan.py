@@ -39,13 +39,12 @@ def main(*args):
         # object or attach to an existing one
         file.seq_file_to_photo() 
         # Next up, creating thumbnails 
-        file.seq_create_thumbnails()
+        #file.seq_create_thumbnails()
 
         # Finally, build directory cache
     if run_through_exif:
         ### Update photo object exif information
         file.seq_update_exif()
-        pass
 
     sys.exit(0)
 

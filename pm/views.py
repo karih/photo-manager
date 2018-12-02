@@ -1,7 +1,8 @@
 import os.path
 
+import flask
 from flask import make_response, redirect, render_template, Response, abort, request, g
-from . import app
+from . import app, es
 from .models import User, File, Session, Photo
 from .helpers import send_file
 
@@ -33,21 +34,45 @@ def logout():
     return redirect('/', code=302) 
 
 
-@app.route('/image/<id>/<size>')
+@app.route('/file/<id>/<size>')
 def image_file(id, size):
     """ The actual jpg image drop-off view """
-    img = Photo.query.get(id)
-    if img is None or img.deleted:
-        abort(404)
-
-    if size not in ('original', 'large', 'thumb'):
+    if size not in app.config["SIZES"].keys():
         abort(403)
 
+    file = File.query.get(id)
+    if file is None or file.deleted:
+        abort(404)
+
     # XXX: Careful..
-    if size == "original": 
-        return send_file(app, img.files[0].path, as_attachment=True, attachment_filename=img.basename)
-    else:
-        return send_file(app, getattr(img, 'path_%s' % size))
+    try:
+        if app.config["SIZES"][size][0] is None: # original file 
+            #return send_file(app, file.path, as_attachment=True, attachment_filename=file.basename)
+            return send_file(app, file.path)
+        else:
+            return send_file(app, file.get_path(size))
+    except FileNotFoundError:
+        abort(503) # Service Unavailable
+
+
+
+
+@app.route('/simple_search')
+def simple_search():
+    query = es.search(
+        index=app.config["ELASTICSEARCH_INDEX"], 
+        q=request.args["q"],
+        from_=request.args.get("offset", 0),
+        size=request.args.get("limit", 20)
+    )
+
+    def map_result_to_answer(dct):
+        _dct = dct["_source"]
+        _dct['files'] = {size: flask.url_for('image_file', id=_dct['file_id'], size=size) for size in app.config["SIZES"].keys()}
+        return _dct
+
+    results = [map_result_to_answer(x) for x in query["hits"]["hits"]]
+    return flask.jsonify(photos=results, total= query["hits"]["total"])
 
 
 @app.route('/s/<album_set>')
