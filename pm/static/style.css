@@ -1,34 +1,20 @@
 
 /* IMAGE BLOCKS */
-.img-outer { display: inline-block; width: 280px; height: 300px; }
-.img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 270px; height: 290px; }
-.img-block:hover {  background-color: orange; }
-.img-block.expanded { background-color: red; }
+div.photo-list .img-outer { display: inline-block; width: 280px; height: 300px; }
+div.photo-list .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 270px; height: 290px; }
+div.photo-list .img-block:hover {  background-color: orange; }
+div.photo-list .img-block.expanded { background-color: red; }
+div.photo-list .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 256px; height: 256px; }
+div.photo-list .img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
+div.photo-list .img-text { margin: 7px 0px 0 0px; height: 20px; }
+div.photo-list .img-text p { height: 100%; vertical-align: middle; text-align: center; }
+div.photo-list .img-block img { vertical-align: middle; max-width: 256px; max-height: 256px; }
 
-.img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 256px; height: 256px; }
-.img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
-.img-text { margin: 7px 0px 0 0px; height: 20px; }
-.img-text p { height: 100%; vertical-align: middle; text-align: center; }
-.img-block img { vertical-align: middle; max-width: 256px; max-height: 256px; }
+.photo-single .img-block img {
+	max-width: 1024px;
+	max-height: 1024px;
+}
 
-/*
-
-.photo-list 
-.photo-list 
-
-.photo-single .img-outer { margin: 0px; width: 820px; height: 800px; }
-.photo-single .img-block { margin: 0px 10px; width: 800px; height: 800px; }
-.photo-single .img-inner { top: 0px; left: 0px; width: 800px; height: 800px; }
-.photo-single .img-block img { max-width: 800px; max-height: 800px; border-width: 0px;  }
-
-.photo-single .img-outer { float: left; }
-.photo-single .properties, .photo-single .labels, .photo-single .people, .photo-single .rass, .photo-single .typpi { margin-left: 820px; }
-.photo-single .properties .panel { margin-top: 0px; }
-.photo-single .panel { margin: 10px; }
-.photo-single .panel-body:after { clear: none; }
-
-div.photo-list { position: relative; }
-*/
 
 .sidebar {
 	position: fixed;

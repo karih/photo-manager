@@ -1,4 +1,3 @@
-
 'use strict';
 
 class Header extends React.Component {
@@ -28,88 +27,53 @@ class Header extends React.Component {
  */
 
 
+
 class App extends React.Component {
 	constructor(props) {
 		super(props);
-
-		this.state_vars = {
-			sort:   {type: "dual", values: ["asc", "desc"]},
-			offset: {type: "int", default: 0},
-			limit:  {type: "int", default: 20},
-		}
-		
-		var global_state = new URLSearchParams(window.location.search);
-			
-		this.state = {
-			sort: global_state.has("sort") && ["asc", "desc"].includes(global_state.get("sort")) ? global_state.get("sort") : "asc",
-		}
-
-	}
-
-
-	updateState(variable, value) {
-		console.log("updateState(", variable, ",", value, ")");
-		var obj = {}
-		obj[variable] = value
-		this.setState(obj);
-		var global_state = new URLSearchParams(window.location.search);
-		global_state.set(variable, value);
-		window.location.search = global_state.toString();
-
-	}
-
-	onChangeState(variable, value) {
-		console.log("onChangeState(", variable, ",", value, ")");
-
-		if (!this.state_vars.hasOwnProperty(variable)) {
-			console.log("Tried to set invalid state variable", variable, "to value", value)
-			return
-		}
-		
-		if (typeof(value) == "undefined") {
-			// now value was passed
-			if (this.state_vars[variable].hasOwnProperty("bool") && this.state_vars[variable].bool === true) {
-				this.updateState(variable, this.state_vars[variable].values[1 - this.state_vars[variable].values.indexOf(this.state[variable])]);
-			} else {
-				console.log("reached else A");
+		this.views = {
+			photos: {
+				view: (args, params, onChangeState) => <PhotoOverview onChangeState={(...args) => onChangeState(...args)} args={args} params={params} />, 
+				url: 'index',
+				params: {
+					sort:   {type: "dual", values: ["asc", "desc"], default: "asc"},
+					offset: {type: "int", default: 0},
+					limit:  {type: "int", default: 20},
+				},
+			},
+			photo: {
+				view: (args, params, onChangeState) => <PhotoSingle onChangeState={(...args) => onChangeState(...args)} args={args} params={params} />, 
+				inherit: 'photos', 
+				url: 'index/single/<int:photo>',
+				params: {}
 			}
-		} else {
-			console.log("reached else B");
-		}
+		};
+
+		this.router = new Router(this.views, 'photos');
+		this.router.read();
+		this.state_vars = this.router.views[this.router.view].params;
+		this.state = {args: this.router.args, params: this.router.params};
+
+		window.addEventListener('popstate', (event) => this.setState(this.router.updateState(event.state, false)));
+	}
+
+	onChangeState(update) {
+		this.setState(this.router.updateState(update));
 	}
 	
-	/*
-	changeSort() {
-		var global_state = new URLSearchParams(window.location.search);
-		if (this.state.sort == "asc") {
-			this.setState({sort: "desc"});
-			global_state.set("sort", "desc");
-		} else {
-			this.setState({sort: "asc"});
-			global_state.set("sort", "asc");
-		}
-		window.location.search = global_state.toString();
-	}
-	*/
-
-	onChangeView(new_view) { }
-
-	test() {
-		this.setState({sort: "desc"});
-	}
-
 	render() {
+		var view = this.router.views[this.router.view].view
 		return (
 			<div>
 				<Header />
 				<div className="container-fluid">
 					<div className="row">
-						<PhotoOverview onChangeState={(...args) => this.onChangeState(...args)} state={this.state} />
+						{view(this.state.args, this.state.params, (...args) => this.onChangeState(...args))}
 					</div>
 				</div>
-				<button type="button" onClick={() => this.test()}>test test</button>
 				<p> state is {JSON.stringify(this.state)}</p>
 			</div>
 		)
+		//<button type="button" onClick={() => this.test()}>test test</button>
 	}
 }

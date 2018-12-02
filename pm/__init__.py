@@ -26,7 +26,7 @@ else:
     app.config.from_object('pm.config.devconfig')
 
 
-db_engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"], echo=False)
+db_engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"], echo=False, **(dict(pool_size=100) if app.config["DEBUG"] else {}))
 db = scoped_session(sessionmaker(bind=db_engine))
 Base = declarative_base()
 Base.query = db.query_property()

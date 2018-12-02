@@ -2,21 +2,14 @@
 
 console.log("rass");
 
-window.addEventListener('beforeunload', function(e) {
-	console.log('beforeunload(', e, ')');
-	//e.preventDefault();
-	//e.returnValue = '';
-	
-});
-
 window.addEventListener('popstate', function(e) {
-	console.log('popstate(', e, ')');
+	console.log('script.popstate(', e, ')');
 });
 window.addEventListener('pushstate', function(e) {
-	console.log('pushstate(', e, ')');
+	console.log('script.pushstate(', e, ')');
 });
 window.addEventListener('hashchange', function(e) {
-	console.log('hashchange(', e, ')');
+	console.log('script.hashchange(', e, ')');
 });
 
 

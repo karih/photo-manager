@@ -73,6 +73,7 @@ def view_image(share_key):
     pass
 
 @app.route('/l')
+@app.route('/l/')
 @app.route('/l/<path:path>')
 def library(path=None):
     """ The library site """
