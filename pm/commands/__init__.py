@@ -3,12 +3,12 @@ from . import run
 from . import scan
 from . import resetdb
 from . import user
-#from . import group
+from . import worker
 from . import resetindex
 #from . import build_cache
 #from . import verify_integrity
 
-commands = ['run', 'resetdb', 'scan', 'user', 'resetindex', ]
+commands = ['run', 'resetdb', 'scan', 'user', 'resetindex', 'worker']
 try:
     from . import debug
     commands.append('debug')

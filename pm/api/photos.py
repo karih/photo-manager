@@ -2,13 +2,18 @@
 import json
 import datetime
 import logging
+
+import flask
 from flask import jsonify, Response, request, url_for, abort
 import elasticsearch as es
 
 import pm
-from .. import app, db
+from .. import app, db, models
 from ..search.searches import PhotoSearch
 from ..models import Photo
+
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/api/photos')
@@ -72,11 +77,13 @@ def photo(id):
             'width' : photo.width,
             'height' : photo.height,
             'date' : photo.date,
-            'labels' : [(label.id, label.label) for label in photo.labels],
-            'people' : [(person.id, person.name) for person in photo.people],
+            'labels' : [{"id": label.id, "label": label.label} for label in photo.labels],
         }
 
-        for file in photo.files:
+        for i, file in enumerate(photo.files):
+            if i == 0:
+                info['sizes'] = {size: flask.url_for('image_file', id=file.id, size=size) for size in app.config["SIZES"].keys()}
+
             info['files'].append({
                 'id' : file.id,
                 'path' : file.path,
@@ -84,7 +91,8 @@ def photo(id):
                 'ctime' : file.ctime,
                 'hash' : file.hash,
                 'size' : file.size,
-                'scanned' : file.scanned
+                'scanned' : file.scanned,
+                'sizes' : {size: flask.url_for('image_file', id=file.id, size=size) for size in app.config["SIZES"].keys()}
             })
         return info
 
@@ -94,9 +102,9 @@ def photo(id):
         abort(404)
 
     if request.method == "PUT":
-        assert "file_id" in request.get_json()
-        im = [f for f in p.files if f.id == int(request.get_json().get("file_id"))][0]
-        p.file_id = im.id
+        labels = request.get_json().get("labels", None)
+        if labels is not None:
+            p.labels = [models.Label.query.get(id) for id in labels]
         db.commit()
         return jsonify(photo=get_info(p))
     else:

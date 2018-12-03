@@ -36,10 +36,11 @@ class App extends React.Component {
 				view: (args, params, onChangeState) => <PhotoOverview onChangeState={(...args) => onChangeState(...args)} args={args} params={params} />, 
 				url: 'index',
 				params: {
-					q:      {type: "string", default: "*"},
-					sort:   {type: "dual", values: ["asc", "desc"], default: "asc"},
-					offset: {type: "int", default: 0},
-					limit:  {type: "int", default: 20},
+					q:          {type: "string", default: "*"},
+					sort_order: {type: "dual",   values: ["asc", "desc"], default: "asc"},
+					sort_column:{type: "string", values: ["id", "date"], default: "date"},
+					offset:     {type: "int", default: 0},
+					limit:      {type: "int", default: 20},
 				},
 			},
 			photo: {
@@ -59,17 +60,21 @@ class App extends React.Component {
 	}
 
 	onChangeState(update) {
-		this.setState(this.router.updateState(update));
+		if (update.hasOwnProperty("url") && update.url)
+			return this.router.updateState(update);
+		else
+			this.setState(this.router.updateState(update));
 	}
 	
 	render() {
-		var view = this.router.views[this.router.view].view
+		var _view = this.router.views[this.router.view].view;
+		console.log("_view", _view, this.router.view, this.router.views);
 		return (
 			<div>
 				<Header />
 				<div className="container-fluid">
 					<div className="row">
-						{view(this.state.args, this.state.params, (...args) => this.onChangeState(...args))}
+						{_view(this.state.args, this.state.params, (...args) => this.onChangeState(...args))}
 					</div>
 				</div>
 				<p> state is {JSON.stringify(this.state)}</p>

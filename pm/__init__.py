@@ -5,6 +5,7 @@ import logging
 
 import flask
 
+import redis
 import elasticsearch
 import sqlalchemy as sa
 from sqlalchemy import create_engine

@@ -1,8 +1,9 @@
 import os.path
+import json
 
 import flask
 from flask import make_response, redirect, render_template, Response, abort, request, g
-from . import app, es
+from . import app, es, redis, models
 from .models import User, File, Session, Photo
 from .helpers import send_file
 
@@ -52,10 +53,8 @@ def image_file(id, size):
         else:
             return send_file(app, file.get_path(size))
     except FileNotFoundError:
+        redis.rpush('thumbnail-queue', json.dumps({'file_id': file.id, 'size': size}))
         abort(503) # Service Unavailable
-
-
-
 
 @app.route('/simple_search')
 def simple_search():
@@ -63,40 +62,49 @@ def simple_search():
         index=app.config["ELASTICSEARCH_INDEX"], 
         q=request.args["q"],
         from_=request.args.get("offset", 0),
-        size=request.args.get("limit", 20)
+        size=request.args.get("limit", 20),
+        sort=request.args.get("sort_column", "id") + ":" + request.args.get("sort_order", "desc")
     )
 
     def map_result_to_answer(dct):
         _dct = dct["_source"]
-        _dct['files'] = {size: flask.url_for('image_file', id=_dct['file_id'], size=size) for size in app.config["SIZES"].keys()}
+        _dct['sizes'] = {size: flask.url_for('image_file', id=_dct['file_id'], size=size) for size in app.config["SIZES"].keys()}
         return _dct
 
     results = [map_result_to_answer(x) for x in query["hits"]["hits"]]
-    return flask.jsonify(photos=results, total= query["hits"]["total"])
+    return flask.jsonify(photos=results, count=query["hits"]["total"])
+
+@app.route('/api/labels')
+def labels():
+    labels = models.Label.query.all()
+    return flask.jsonify(labels=[{"id": lbl.id, "label": lbl.label} for lbl in labels])
 
 
-@app.route('/s/<album_set>')
-def view_album_set(album_set):
-    # view a set of albums
-    pass
 
-@app.route('/a/<album_shortname>/download')
-def album_download(album_shortname):
-    # direct download of an album as tar.gz/zip
-    # option: format - specific format
-    # option: highres - include originals where allowed
-    pass
 
-@app.route('/a/<album_shortname>')
-def view_album(album_shortname):
-    # view an album
-    pass
 
-@app.route('/i/<share_key>')
-def view_image(share_key):
-    # direct link to an image (displayed inside some html)
-    pass
-
+#@app.route('/s/<album_set>')
+#def view_album_set(album_set):
+#    # view a set of albums
+#    pass
+#
+#@app.route('/a/<album_shortname>/download')
+#def album_download(album_shortname):
+#    # direct download of an album as tar.gz/zip
+#    # option: format - specific format
+#    # option: highres - include originals where allowed
+#    pass
+#
+#@app.route('/a/<album_shortname>')
+#def view_album(album_shortname):
+#    # view an album
+#    pass
+#
+#@app.route('/i/<share_key>')
+#def view_image(share_key):
+#    # direct link to an image (displayed inside some html)
+#    pass
+#
 @app.route('/l')
 @app.route('/l/')
 @app.route('/l/<path:path>')

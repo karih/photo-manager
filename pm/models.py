@@ -179,10 +179,10 @@ class File(Base):
 #)
 #
 #
-#labels_association_table = sa.Table('labels_photos', Base.metadata,
-#    sa.Column('label_id', sa.Integer, sa.ForeignKey('labels.id')),
-#    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
-#)
+labels_association_table = sa.Table('labels_photos', Base.metadata,
+    sa.Column('label_id', sa.Integer, sa.ForeignKey('labels.id')),
+    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
+)
 
 
 class Photo(Base):
@@ -229,7 +229,7 @@ class Photo(Base):
     group = relationship("Group", back_populates="photos")
 
     #people = relationship("Person", secondary=people_association_table, back_populates="photos")
-    #labels = relationship("Label", secondary=labels_association_table, back_populates="photos")
+    labels = relationship("Label", secondary=labels_association_table, back_populates="photos")
 
     #primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
     #derivatives = relationship('PhotoDerivative', back_populates='orig')
@@ -243,6 +243,11 @@ class Photo(Base):
             "dirnames":        {"type": "keyword" }, 
             "date":            {"type": "date" }, 
             "file_id":         {"type": "integer" },
+            "label":           {"type": "keyword" },
+            "label_ids":       {"type": "integer" },
+            "year":            {"type": "integer" },
+            "month":           {"type": "integer" },
+            "path_components": {"type": "text" }
 
             #"aperture":        { "type": "float" }, 
             #"exposure":        { "type": "float" }, 
@@ -277,6 +282,11 @@ class Photo(Base):
             'basenames': self.basenames,
             'paths': self.paths,
             'file_id': self.files[0].id,
+            'label': [lbl.label for lbl in self.labels],
+            'label_ids': [lbl.id for lbl in self.labels],
+            'path_components': " ".join([seg for path in self.paths for seg in path.split("/")]),
+            'year': self.date.year if self.date is not None else None,
+            'month': self.date.month if self.date is not None else None,
         }
         #fields = ('width', 'height', 'date', 'dirnames', 'model', 'lens')
         #return {k: getattr(self, k) for k in fields}
@@ -328,13 +338,13 @@ class Group(Base):
 #    photos = relationship("Photo", secondary=people_association_table, back_populates="people")
 #
 #
-#class Label(Base):
-#    __tablename__ = "labels"
-#
-#    id = sa.Column(sa.Integer, primary_key=True)
-#    label = sa.Column(sa.Unicode(255), nullable=False)
-#
-#    photos = relationship("Photo", secondary=labels_association_table, back_populates="labels")
+class Label(Base):
+    __tablename__ = "labels"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), nullable=False)
+
+    photos = relationship("Photo", secondary=labels_association_table, back_populates="labels")
 
 
 #class PhotoDerivative(Base):

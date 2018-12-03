@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Runs development server
 
 from .. import app

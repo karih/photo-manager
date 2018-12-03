@@ -19,11 +19,44 @@ function cast(param, value) {
 			if (isNaN(new_value))
 				new_value = null;
 			break;
+		case "string":
+			new_value = value;
+			break
 		default:
-			console.log("ERROR: Unknown parameter type");
+			console.log("ERROR: Unknown parameter type", param, value);
+			new_value = value;
 	}
 
 	return [new_value, new_value == null ? null : (new_value.toString() != value), new_value == param.default];
+}
+
+class Link extends React.Component {
+	onClick(event) {
+		// if normal click -> don't let browser reload
+		if (event.ctrlKey) { 
+			// if ctrl-click -> don't make any local changes
+		} else {
+			event.preventDefault();
+			app.onChangeState(this.props.newState);
+			return false;
+		}
+	}
+
+	newStateUrl() {
+		return app.router.updateState({...this.props.newState, ...{url: true}})	
+	}
+
+	render() {
+		console.log(this.props, app);
+
+		let props = {}
+		for (let key in this.props) {
+			if (['children', 'newState', ].indexOf(key) < 0)
+				props[key] = JSON.parse(JSON.stringify(this.props[key]));
+		}
+		
+		return (<a href={this.newStateUrl()} onClick={(x) => this.onClick(x)} {...props}>{this.props.children}</a>);
+	}
 }
 
 class Router {
@@ -197,20 +230,32 @@ class Router {
 		return out;
 	}
 
-	updateState(obj, redirect=true) {
+	updateState(obj) {
+		// TODO: Clean this up a bit - particularly how the object makes changes to itself before determining the url
+		let return_url = obj.hasOwnProperty("url") && obj.url;
+		let redirect   = obj.hasOwnProperty("redirect") && obj.redirect;
+
 		let self = this;
+		if (return_url) {
+			self.views  = JSON.parse(JSON.stringify(this.views));
+			self.view   = JSON.parse(JSON.stringify(this.view));
+			self.params = JSON.parse(JSON.stringify(this.params));
+			self.args   = JSON.parse(JSON.stringify(this.args));
+		} 
+
 		var new_state = {};
-		var old_state = {view: this.view, args: JSON.parse(JSON.stringify(this.args)), params: JSON.parse(JSON.stringify(this.params))};
+		var old_state = {view: self.view, args: JSON.parse(JSON.stringify(self.args)), params: JSON.parse(JSON.stringify(self.params))};
 		console.debug("OLD STATE", old_state);
 		console.debug("UPDATE", obj);
 		if (obj.hasOwnProperty("view")) {
-			this.view = obj.view;
+			self.view = obj.view;
 			new_state.view = obj.view;
 			new_state.args = {};
-			this.args = {}; // reset args 
+			self.args = {}; // reset args 
 
+			self.params = JSON.parse(JSON.stringify(self.params));
 			// initializing all params to default values and marking them as changed
-			Object.entries(this.all_params()).forEach(function ([key, val]) {
+			Object.entries(self.all_params()).forEach(function ([key, val]) {
 				if (!self.params.hasOwnProperty(key)) { 
 					if (!new_state.hasOwnProperty("params"))
 						new_state.params = {}
@@ -221,9 +266,10 @@ class Router {
 			});
 		}
 
-		let view = this.views[this.view];
-		let params = this.all_params();
+		let view = self.views[self.view];
+		let params = self.all_params();
 
+		console.log("XX", params)
 		if (obj.hasOwnProperty("args")) {
 			Object.entries(obj.args).forEach(function ([key, val]) {
 				let old_value = self.args[key];
@@ -237,14 +283,15 @@ class Router {
 				}
 				//console.log("Updated argument", key, "to value", val);
 			});
-			new_state.args = this.args;
+			new_state.args = self.args;
 		}
 
+		console.log("XY")
 		if (obj.hasOwnProperty("params")) {
 			new_state.params = {}
 			self.params = JSON.parse(JSON.stringify(self.params));
 			Object.entries(obj.params).forEach(function ([key, val]) {
-				//console.log("param key", key, "val", val, "self.params", self.params, "all_params", params, "view", self.view);
+				console.log("param key", key, "val", val, "self.params", self.params, "all_params", params, "view", self.view);
 				let old_value = self.params[key];
 				let new_value = null;
 				if (params[key].type == "dual" && val == "~") {
@@ -258,21 +305,26 @@ class Router {
 					new_value = val;
 				}
 				if (new_state.hasOwnProperty("view") || old_value != new_value) {
+					console.log("XYA")
 					self.params[key] = new_value;
+					console.log("XYB")
 					new_state.params[key] = new_value;
 					//console.log("Setting param", key, "value", new_value);
 				}
 			});
-			new_state.params = this.params;
+			new_state.params = self.params;
 		}
 
 		//console.log("Before redirect, view", this.view, "args", this.args, "params", this.params);
 	
-		if (redirect && Object.keys(new_state).length > 0) {
-			console.log("PUSHING STATE", this.state(), this.write_url());
-			window.history.pushState(this.state(), "",  this.write_url());
+		if (return_url) {
+			return self.write_url();
+		} else if (redirect && Object.keys(new_state).length > 0) {
+			console.log("PUSHING STATE", self.state(), self.write_url());
+			window.history.pushState(self.state(), "",  self.write_url());
+			//window.open(this.write_url(), '_blank');
 		} else {
-			console.log("UPDATED STATE WITHOUT PUSHING TO HISTORY", this.state());
+			console.log("UPDATED STATE WITHOUT PUSHING TO HISTORY", self.state());
 		}
 
 		return new_state;

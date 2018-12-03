@@ -1,19 +1,22 @@
 
 /* IMAGE BLOCKS */
 div.photo-list .img-outer { display: inline-block; width: 280px; height: 300px; }
-div.photo-list .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 270px; height: 290px; }
+div.photo-list .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 254px; height: 274px; }
 div.photo-list .img-block:hover {  background-color: orange; }
 div.photo-list .img-block.expanded { background-color: red; }
-div.photo-list .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 256px; height: 256px; }
+div.photo-list .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 240px; height: 240px; }
 div.photo-list .img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
 div.photo-list .img-text { margin: 7px 0px 0 0px; height: 20px; }
-div.photo-list .img-text p { height: 100%; vertical-align: middle; text-align: center; }
-div.photo-list .img-block img { vertical-align: middle; max-width: 256px; max-height: 256px; }
+div.photo-list .img-text p { height: 100%; vertical-align: middle; text-align: center; overflow: hidden; }
+div.photo-list .img-block img { vertical-align: middle; max-width: 240px; max-height: 240px; }
 
-.photo-single .img-block img {
-	max-width: 1024px;
-	max-height: 1024px;
-}
+.photo-single .img-outer { display: block; width: 840x; height: 840px; }
+.photo-single .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 814px; height: 814px; }
+.photo-single .img-block:hover {  background-color: orange; }
+.photo-single .img-block.expanded { background-color: red; }
+.photo-single .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 800px; height: 800px; }
+.photo-single .img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
+.photo-single .img-block img { vertical-align: middle; max-width: 800px; max-height: 800px; }
 
 
 .sidebar {
