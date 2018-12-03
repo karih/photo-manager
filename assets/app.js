@@ -1,5 +1,10 @@
 'use strict';
 
+import React, {Component} from "react";
+
+import {Router, Link} from './router.js';
+import {PhotoOverview, PhotoSingle} from './photos.js';
+
 class Header extends React.Component {
 	render() {
     return (<header>
@@ -28,7 +33,7 @@ class Header extends React.Component {
 
 
 
-class App extends React.Component {
+export class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.views = {
@@ -37,7 +42,7 @@ class App extends React.Component {
 				url: 'index',
 				params: {
 					q:          {type: "string", default: "*"},
-					sort_order: {type: "dual",   values: ["asc", "desc"], default: "asc"},
+					sort_order: {type: "string", values: ["asc", "desc"], default: "asc"},
 					sort_column:{type: "string", values: ["id", "date"], default: "date"},
 					offset:     {type: "int", default: 0},
 					limit:      {type: "int", default: 20},
@@ -51,12 +56,29 @@ class App extends React.Component {
 			}
 		};
 
+		this.state = {};
 		this.router = new Router(this.views, 'photos');
-		this.router.read();
-		this.state_vars = this.router.views[this.router.view].params;
-		this.state = {args: this.router.args, params: this.router.params};
+		this.router_read(true);
 
 		window.addEventListener('popstate', (event) => this.setState(this.router.updateState(event.state, false)));
+	}
+
+	router_read(init=false) {
+		this.router.read();
+		this.state_vars = this.router.views[this.router.view].params;
+		if (init) {
+			this.state = this.router.state();
+		} else {
+			this.setState(this.router.state());
+		}
+	}
+
+	onPopState(event) {
+		if (event.state) {
+			this.setState(this.router.updateState(event.state, false));
+		} else {
+			this.router_read();
+		}
 	}
 
 	onChangeState(update) {

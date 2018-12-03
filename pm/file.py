@@ -31,24 +31,26 @@ def scan_for_new_files():
                 file = models.File.query.filter(models.File.path == file_path)[0]
                 continue
             except IndexError:
-                with open(file_path, 'rb') as f:
-                    m = hashlib.sha512()
-                    m.update(f.read())
-                    hash = m.hexdigest()
+                try: 
+                    with open(file_path, 'rb') as f:
+                        m = hashlib.sha512()
+                        m.update(f.read())
+                        hash = m.hexdigest()
 
-                stat = os.stat(file_path)
-                file = models.File(
-                    path=file_path,
-                    ctime=datetime.datetime.fromtimestamp(stat.st_ctime),
-                    size=stat.st_size,
-                    hash=hash
-                )
+                    stat = os.stat(file_path)
+                    file = models.File(
+                        path=file_path,
+                        ctime=datetime.datetime.fromtimestamp(stat.st_ctime),
+                        size=stat.st_size,
+                        hash=hash
+                    )
 
-                db.add(file)
-                db.commit()
+                    db.add(file)
+                    db.commit()
+                except PermissionError as e:
+                    continue
                 #for user in users:
                 #    file.users.append(user)
-                db.commit()
 
 def search_for_images(root_path):
     """ 

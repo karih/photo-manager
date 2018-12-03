@@ -21,7 +21,7 @@ div.photo-list .img-block img { vertical-align: middle; max-width: 240px; max-he
 
 .sidebar {
 	position: fixed;
-	top: 0:
+	top: 0;
 	bottom: 0;
 	left: 0;
 	z-index: 100; /* behind the navbar */

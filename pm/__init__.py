@@ -49,6 +49,10 @@ def configure_proxy():
         else:
             app.config["USE_X_ACCEL"] = False
 
+#@app.after_request
+#def apply_caching(response):
+#    response.headers["Content-Security-Policy"] = "script-src 'self' https://unpkg.com style-src 'self' https://stackpath.bootstrapcdn.com"
+#    return response
 
 app.before_request(auth.authenticate)
 

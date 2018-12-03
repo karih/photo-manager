@@ -1,5 +1,10 @@
 'use strict';
 
+import React, {Component} from "react";
+
+import {Link} from './router.js';
+
+
 class Photo extends React.Component {
 	onKeyDown(e) { console.log("onKeyDown"); }
 	onFocus() { console.log("onFocus"); }
@@ -126,14 +131,25 @@ class PhotoList extends React.Component {
 	}
 }
 
-class PhotoOverview extends React.Component {
+export class PhotoOverview extends React.Component {
 	constructor(props) {
 		console.log("PhotoOverview(", props,")");
 		super(props);
 		this.state = {photos: []};
 	}
 
-	componentDidMount() { this.query(); }
+	componentDidMount() { 
+		window.addEventListener('keydown', (e) => {
+			if (!e.repeat) {
+				if (e.key == "ArrowRight") {
+					this.props.onChangeState({params: {offset: this.props.params.offset+this.props.params.limit}}); 
+				} else if (e.key == "ArrowLeft") {
+					this.props.onChangeState({params: {offset: Math.max(0, this.props.params.offset-this.props.params.limit)}});
+				}
+			}
+		});
+		this.query(); 
+	}
 
 	query() {
 		let self = this;
@@ -198,7 +214,7 @@ class PhotoOverview extends React.Component {
 	}
 }
 
-class PhotoSingle extends React.Component {
+export class PhotoSingle extends React.Component {
 	//http://localhost:8000/simple_search?q=id:99
 	constructor(props) {
 		console.log("PhotoSingle(", props,")");

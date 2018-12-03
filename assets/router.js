@@ -1,14 +1,13 @@
 'use strict';
 
+import React, {Component} from "react";
+
+import app from './index.js';
+
+
 function cast(param, value) {
 	var new_value = null;
 	switch (param.type) {
-		case "dual":
-			if (param.values.indexOf(value) < 0) 
-				new_value = param.default;
-			else
-				new_value = value;
-			break;
 		case "int": 
 			new_value = Number.parseInt(value);
 			if (isNaN(new_value))
@@ -30,7 +29,7 @@ function cast(param, value) {
 	return [new_value, new_value == null ? null : (new_value.toString() != value), new_value == param.default];
 }
 
-class Link extends React.Component {
+export class Link extends React.Component {
 	onClick(event) {
 		// if normal click -> don't let browser reload
 		if (event.ctrlKey) { 
@@ -47,7 +46,7 @@ class Link extends React.Component {
 	}
 
 	render() {
-		console.log(this.props, app);
+		//console.log(this.props, app);
 
 		let props = {}
 		for (let key in this.props) {
@@ -59,7 +58,7 @@ class Link extends React.Component {
 	}
 }
 
-class Router {
+export class Router {
 	constructor(views, default_view) {
 		this.views = views;
 		this.default_view = default_view;
@@ -70,9 +69,13 @@ class Router {
 
 	base_href() { return document.getElementsByTagName('base')[0].href; }
 
-	all_params() {
+	all_params(view=null) {
 		//console.log("all_params")
-		let view = this.views[this.view];
+		if (view == null)
+			view = this.views[this.view];
+		else
+			view = this.views[view];
+
 		let params = {};
 		while (true) {
 			Object.entries(view.params).forEach(function ([key, val]) {
@@ -194,20 +197,21 @@ class Router {
 		return {view: this.view, args: this.args, params: this.params};
 	}
 
-	write_url() {
+	write_url(new_state=null) {
+		if (new_state == null)
+			new_state = this.state();
 		//console.log("write_url()");
 		let params = new URLSearchParams();
-		let self = this;
 		
-		Object.entries(this.nondefault_params()).forEach(function ([key, val]) {
+		Object.entries(this.nondefault_params(new_state.view, new_state.params)).forEach(function ([key, val]) {
 			//console.log("Adding argument ", key, " value ", val);
 			params.append(key, val);
 		});
 
-		let view_url = this.views[this.view].url;
-		Object.entries(this.views[this.view].args).forEach(function ([key, val]) {
+		let view_url = this.views[new_state.view].url;
+		Object.entries(this.views[new_state.view].args).forEach(function ([key, val]) {
 			//console.log("view_url was", view_url)
-			view_url = view_url.replace("<" + val.type + ":" + val.name + ">", self.args[key]);
+			view_url = view_url.replace("<" + val.type + ":" + val.name + ">", new_state.args[key]);
 			//console.log("view_url is", view_url)
 		});
 
@@ -218,113 +222,76 @@ class Router {
 		return url;
 	}
 
-	nondefault_params() {
+	nondefault_params(view=null, params=null) {
 		let out = {};
-		let params = this.all_params();
-		let self = this;
-		Object.entries(params).forEach(function ([key, val]) {
+		let all_params = (view == null) ? this.all_params() : this.all_params(view);
+		let set_params = (params == null) ? this.params : params;
+		Object.entries(all_params).forEach(function ([key, val]) {
 			//console.log("nondefault_params()", "key", key, "val", val, "current value", self.params[key]);
-			if (val.default != self.params[key])
-				out[key] = self.params[key];
+			if (val.default != set_params[key])
+				out[key] = set_params[key];
 		});
 		return out;
 	}
 
 	updateState(obj) {
 		// TODO: Clean this up a bit - particularly how the object makes changes to itself before determining the url
-		let return_url = obj.hasOwnProperty("url") && obj.url;
-		let redirect   = obj.hasOwnProperty("redirect") && obj.redirect;
 
 		let self = this;
-		if (return_url) {
-			self.views  = JSON.parse(JSON.stringify(this.views));
-			self.view   = JSON.parse(JSON.stringify(this.view));
-			self.params = JSON.parse(JSON.stringify(this.params));
-			self.args   = JSON.parse(JSON.stringify(this.args));
-		} 
+		let return_url = obj.hasOwnProperty("url") && obj.url;
 
-		var new_state = {};
 		var old_state = {view: self.view, args: JSON.parse(JSON.stringify(self.args)), params: JSON.parse(JSON.stringify(self.params))};
-		console.debug("OLD STATE", old_state);
-		console.debug("UPDATE", obj);
-		if (obj.hasOwnProperty("view")) {
-			self.view = obj.view;
-			new_state.view = obj.view;
-			new_state.args = {};
-			self.args = {}; // reset args 
+		var new_state = {view: self.view, args: JSON.parse(JSON.stringify(self.args)), params: JSON.parse(JSON.stringify(self.params))};
 
-			self.params = JSON.parse(JSON.stringify(self.params));
-			// initializing all params to default values and marking them as changed
-			Object.entries(self.all_params()).forEach(function ([key, val]) {
-				if (!self.params.hasOwnProperty(key)) { 
-					if (!new_state.hasOwnProperty("params"))
-						new_state.params = {}
-					//console.log("Setting param", key, "value", val.default);
-					self.params[key] = val.default;
-					new_state.params[key] = self.params[key];
+		if (!return_url)
+			console.debug("OLD STATE", old_state, "UPDATE", obj);
+
+		let new_params    = self.all_params();
+
+		if (obj.hasOwnProperty("view") && obj.view != self.view) {
+			new_state.view = obj.view;
+			new_state.args = {}; // new view - let's reset the args
+
+			new_params    = self.all_params(new_state.view);
+
+			// we are changing view, so let's initialize all params to default values and mark them as changed
+			Object.entries(new_params).forEach(function ([key, val]) {
+				if (!new_state.params.hasOwnProperty(key)) {  // param was not set by past view
+					new_state.params[key] = val.default; // initialize to default
 				}
 			});
 		}
 
-		let view = self.views[self.view];
-		let params = self.all_params();
-
-		console.log("XX", params)
 		if (obj.hasOwnProperty("args")) {
 			Object.entries(obj.args).forEach(function ([key, val]) {
-				let old_value = self.args[key];
-				let new_value = cast(view.args[key], val)[0];
-				if (new_state.hasOwnProperty("view") || old_value != new_value) {
-					if (!new_state.hasOwnProperty("args"))
-						new_state.args = {}
-					new_state.args[key] = new_value;
-					self.args[key] = new_value;
-					//console.log("Setting arg", key, "value", new_value);
-				}
-				//console.log("Updated argument", key, "to value", val);
+				new_state.args[key] = cast(self.views[new_state.view].args[key], val)[0];
 			});
-			new_state.args = self.args;
 		}
 
-		console.log("XY")
 		if (obj.hasOwnProperty("params")) {
-			new_state.params = {}
-			self.params = JSON.parse(JSON.stringify(self.params));
 			Object.entries(obj.params).forEach(function ([key, val]) {
-				console.log("param key", key, "val", val, "self.params", self.params, "all_params", params, "view", self.view);
-				let old_value = self.params[key];
-				let new_value = null;
-				if (params[key].type == "dual" && val == "~") {
-					//console.log(key, val, "flipping");
-					new_value = params[key].values[1 - params[key].values.indexOf(self.params[key])];
-				} else if (val == null) {
-					//console.log(key, val, "defaulting");
-					new_value = params[key].default;
-				} else {
-					//console.log(key, val, "setting");
-					new_value = val;
-				}
-				if (new_state.hasOwnProperty("view") || old_value != new_value) {
-					console.log("XYA")
-					self.params[key] = new_value;
-					console.log("XYB")
-					new_state.params[key] = new_value;
-					//console.log("Setting param", key, "value", new_value);
-				}
+				new_state.params[key] = (val == null) ? new_params[key].default : val;
 			});
-			new_state.params = self.params;
 		}
 
-		//console.log("Before redirect, view", this.view, "args", this.args, "params", this.params);
+		let redirect   = !obj.hasOwnProperty("redirect") || obj.redirect;
 	
-		if (return_url) {
-			return self.write_url();
-		} else if (redirect && Object.keys(new_state).length > 0) {
-			console.log("PUSHING STATE", self.state(), self.write_url());
-			window.history.pushState(self.state(), "",  self.write_url());
-			//window.open(this.write_url(), '_blank');
+		if (return_url) { // we just want the url
+			return self.write_url(new_state);
 		} else {
-			console.log("UPDATED STATE WITHOUT PUSHING TO HISTORY", self.state());
+			// update current router
+			this.view = new_state.view;
+			this.args = new_state.args;
+			this.params = new_state.params;
+
+			console.log("NEW STATE", self.state());
+
+			if (redirect) {
+				console.log("REDIRECTING", self.write_url(new_state));
+				window.history.pushState(self.state(), "",  self.write_url(new_state));
+			} else {
+				console.log("NO REDIRECT");
+			}
 		}
 
 		return new_state;
