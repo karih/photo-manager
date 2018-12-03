@@ -33,7 +33,7 @@ fi
 # TODO: switch to git-archive
 ssh $LOGIN "find ${HOSTDIR}/pm | grep py$ | xargs rm"
 ssh $LOGIN "find ${HOSTDIR}/pm | grep pyc$ | xargs rm"
-tar -cj -f - $(git ls-files pm)  manage.py ${add_files} | ssh $LOGIN "tar -xj -f - -C $HOSTDIR"
+tar -cj -f - $(git ls-files pm) package.json package-lock.json .babelrc webpack.config.js $(git ls-files assets) manage.py ${add_files} | ssh $LOGIN "tar -xj -f - -C $HOSTDIR"
 
 if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then 
 	echo "Reinitializing python environment"
@@ -45,6 +45,13 @@ if [[ $do_reinstall_py =~ ^(y|Y)$ ]]; then
 	ssh ${LOGIN} rm ${HOSTDIR}/deployment_requirements.pip
 fi
 
+if [[ $do_reinstall_npm =~ ^(y|Y)$ ]]; then 
+	echo "Reinitializing npm environment"
+	ssh ${LOGIN} rm -rf ${HOSTDIR}/node_modules
+	ssh ${LOGIN} npm install 
+fi
+
+ssh ${LOGIN} npm run-script build
 exit
 
 

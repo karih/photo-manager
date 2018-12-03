@@ -5,3 +5,5 @@ pm/config/devconfig.py
 pm/static/bundle.js
 node_modules
 dist
+.env
+deployment_requirements.pip

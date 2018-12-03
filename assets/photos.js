@@ -6,13 +6,6 @@ import {Link} from './router.js';
 
 
 class Photo extends React.Component {
-	onKeyDown(e) { console.log("onKeyDown"); }
-	onFocus() { console.log("onFocus"); }
-	onChange() { console.log("onChange"); }
-	onBlur() { console.log("onBlur"); }
-	onMouseOver() { console.log("onMouseOver"); }
-	onClick(e) { console.log('onClick'); }
-
 	onError(e) {
 		//console.log("Caught error event", e, e.target, e.type);
 		//e.target.onerror = null;
