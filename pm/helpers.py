@@ -20,10 +20,13 @@ def send_file(app, f, **kwargs):
             r.headers["Content-Disposition"] = "attachment; filename=%s" % kwargs.get("attachment_filename", os.path.basename(p))
         return r
 
+    if not os.path.exists(f):
+        raise FileNotFoundError(f)
+
     if app.config["USE_X_ACCEL"] and f.startswith(app.config["TEMP_DIR"]):
         return xaccel(os.path.join('/internal/tmp', f[len(app.config["TEMP_DIR"])+1:]))
-    elif app.config["USE_X_ACCEL"] and f.startswith(app.config["SEARCH_ROOT"]):
-        return xaccel(os.path.join('/internal/root', f[len(app.config["SEARCH_ROOT"])+1:]))
+    #elif app.config["USE_X_ACCEL"] and f.startswith(app.config["SEARCH_ROOT"]):
+    #    return xaccel(os.path.join('/internal/root', f[len(app.config["SEARCH_ROOT"])+1:]))
     else:
         return flask.send_file(f, **kwargs)
 

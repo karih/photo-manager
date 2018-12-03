@@ -102,7 +102,10 @@ class PhotoExif(object):
             self._exiftool_info = {}
             for f, file in enumerate(self.files):
                 cp = subprocess.run(['exiftool', "-charset", "utf8", "-json", "-n", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                self._exiftool_info[f] = json.loads(cp.stdout.decode('utf-8'))[0]
+                try:
+                    self._exiftool_info[f] = json.loads(cp.stdout.decode('utf-8'))[0]
+                except json.decoder.JSONDecodeError:
+                    pass
 
         def inner():
             for k, v in self._exiftool_info.items():
@@ -112,11 +115,11 @@ class PhotoExif(object):
 
     @property
     def width(self):
-        return first(i["ImageWidth"] for i in self.exiftool_info())
+        return first((i["ImageWidth"] if "ImageWidth" in i else None) for i in self.exiftool_info())
 
     @property
     def height(self):
-        return first(i["ImageHeight"] for i in self.exiftool_info())
+        return first((i["ImageHeight"] if "ImageHeight" in i else None)for i in self.exiftool_info())
 
     @property
     def date(self):

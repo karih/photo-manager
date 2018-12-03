@@ -1,11 +1,15 @@
 import os.path
 import json
+import logging
 
 import flask
 from flask import make_response, redirect, render_template, Response, abort, request, g
 from . import app, es, redis, models
 from .models import User, File, Session, Photo
 from .helpers import send_file
+
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/login', methods=["POST"])
@@ -53,6 +57,7 @@ def image_file(id, size):
         else:
             return send_file(app, file.get_path(size))
     except FileNotFoundError:
+        logger.info("File not found, queing for resize")
         redis.rpush('thumbnail-queue', json.dumps({'file_id': file.id, 'size': size}))
         abort(503) # Service Unavailable
 

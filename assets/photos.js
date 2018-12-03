@@ -197,7 +197,7 @@ export class PhotoOverview extends React.Component {
 						count={this.state.count}
 						onPrev={() => this.props.onChangeState({params: {offset: Math.max(0, this.props.params.offset-this.props.params.limit)}})} 
 						onNext={() => this.props.onChangeState({params: {offset: this.props.params.offset+this.props.params.limit}})} 
-						onChangeLimit={(limit) => this.props.onChangeState({params: {limit: limit}})} 
+						onChangeLimit={(limit) => this.props.onChangeState({params: {limit: Number.parseInt(limit)}})}
 					/>
 					<QueryField value={this.props.params.q} onChange={(q) => this.props.onChangeState({params: {q: q, offset: 0}})} />
 				</div>

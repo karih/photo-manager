@@ -15,10 +15,10 @@
 LOGIN=${1}
 HOSTDIR=${2}
 
-do_reinstall_py=y
+do_reinstall_py=n
 do_file_scan=n
 do_reinitialize_db=n
-do_reinstall_npm=y
+do_reinstall_npm=n
 
 #[[ -t 0 ]] && read -p $'\e[1;32m Do you want to purge and reinstall python packages? (y/N)\e[0m ' do_reinstall_py
 #[[ -t 0 ]] && read -p $'\e[1;32m Do you want to drop all db tables and reinitialize? (y/N)\e[0m ' do_reinitialize_db 
@@ -52,7 +52,7 @@ if [[ $do_reinstall_npm =~ ^(y|Y)$ ]]; then
 fi
 
 ssh ${LOGIN} npm run-script build
-exit
+exit 0
 
 
 if [[ $do_reinitialize_db =~ ^(y|Y)$ ]]; then 
