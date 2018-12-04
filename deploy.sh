@@ -52,8 +52,8 @@ if [[ $do_reinstall_npm =~ ^(y|Y)$ ]]; then
 fi
 
 ssh ${LOGIN} npm run-script build
-exit 0
 
+exit 0
 
 if [[ $do_reinitialize_db =~ ^(y|Y)$ ]]; then 
 	echo "Reinitializing database"

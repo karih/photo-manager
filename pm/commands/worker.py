@@ -23,4 +23,5 @@ def main(*args):
         if os.path.exists(dest_file):
             continue
         
+        logger.info("Resizing src=%s dst=%s to size %s", source_file, dest_file, task["size"])
         image_processing.create_thumbnails(source_file, [(app.config["SIZES"][task["size"]][0:2], dest_file, )])

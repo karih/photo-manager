@@ -131,18 +131,30 @@ export class PhotoOverview extends React.Component {
 		this.state = {photos: []};
 	}
 
-	componentDidMount() { 
-		window.addEventListener('keydown', (e) => {
+	onKeyDownOuter() {
+		let self = this;
+		let onKeyDown = function(e) {
 			if (!e.repeat) {
 				if (e.key == "ArrowRight") {
-					this.props.onChangeState({params: {offset: this.props.params.offset+this.props.params.limit}}); 
+					self.props.onChangeState({params: {offset: self.props.params.offset+self.props.params.limit}}); 
 				} else if (e.key == "ArrowLeft") {
-					this.props.onChangeState({params: {offset: Math.max(0, this.props.params.offset-this.props.params.limit)}});
+					self.props.onChangeState({params: {offset: Math.max(0, self.props.params.offset-self.props.params.limit)}});
 				}
 			}
-		});
+		}
+		return onKeyDown;
+	}
+
+	componentDidMount() { 
+		this.onKeyDown = this.onKeyDownOuter();
+		window.addEventListener('keydown', this.onKeyDown);
 		this.query(); 
 	}
+
+	componentWillUnmount() {
+		window.removeEventListener('keydown', this.onKeyDown);
+	}
+
 
 	query() {
 		let self = this;
