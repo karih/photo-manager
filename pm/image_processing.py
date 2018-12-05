@@ -32,7 +32,7 @@ def create_thumbnails(filename, thumbnails):
 
     with wand.image.Image(filename=filename) as im:
         for size, dest in thumbnails:
-            #logging.debug("Creating thumbnail %s from filename %s", dest, filename)
+            logging.debug("Creating thumbnail %s from filename %s", dest, filename)
             with im.clone() as cl:
                 cl.format = 'jpeg'
                 cl.auto_orient()

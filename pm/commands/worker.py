@@ -24,4 +24,7 @@ def main(*args):
             continue
         
         logger.info("Resizing src=%s dst=%s to size %s", source_file, dest_file, task["size"])
-        image_processing.create_thumbnails(source_file, [(app.config["SIZES"][task["size"]][0:2], dest_file, )])
+        try:
+            image_processing.create_thumbnails(source_file, [(app.config["SIZES"][task["size"]][0:2], dest_file, )])
+        except Exception as e:
+            logger.exception("Exception while resizing photo")

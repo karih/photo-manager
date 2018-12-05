@@ -5,8 +5,6 @@ import logging
 import datetime
 import hashlib
 
-import sqlalchemy as sa
-
 from . import app, db, helpers, models, image_processing, exif
 
 
@@ -93,21 +91,19 @@ def seq_file_to_photo():
     def pre(offset, limit, rows):
         logging.debug("file_to_photo: starting batch %d-%d/%d" % (offset, offset+limit, rows))
 
-    for file in models.model_iterator(
+    for file in models.model_iterator( 
             models.File.query.filter(models.File.photo_id == None).filter(models.File.error == None).filter(models.File.deleted == False), 
             pre, 
             lambda **kwargs: db.commit()
         ):
 
-        try:
+        try: 
             photo = models.File.query.filter(models.File.hash == file.hash).filter(models.File.photo_id != None)[0].photo
             file.photo = photo
         except IndexError:
             metadata = exif.PhotoExif(file.path)
             try:
-                photo = [f for f in models.File.query.filter(models.File.photo_id != None).filter(
-                    sa.or_(models.File.hash == file.hash, models.File.path.contains(drop_dir_ext(file.path)))
-                ) if f.hash == file.hash or (drop_dir_ext(f.path) == drop_dir_ext(file.path) and f.photo.date == metadata.date)][0].photo
+                photo = [f for f in models.File.query.filter(models.File.photo_id != None).filter(models.File.path.contains(drop_dir_ext(file.path))) if drop_dir_ext(f.path) == drop_dir_ext(file.path) and f.photo.date == metadata.date][0].photo
                 file.photo = photo
             except IndexError:
                 photo = models.Photo(**metadata.get_dict())

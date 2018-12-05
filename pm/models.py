@@ -8,6 +8,7 @@ import datetime
 import logging
 import tempfile
 
+import elasticsearch
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID, HSTORE, JSON
@@ -287,7 +288,7 @@ class Photo(Base):
             'dirnames': self.dirnames,
             'basenames': self.basenames,
             'paths': self.paths,
-            'file_id': self.files[0].id,
+            'file_id': self.files[0].id if len(self.files) > 0 else None,
             'label': [lbl.label for lbl in self.labels],
             'label_ids': [lbl.id for lbl in self.labels],
             'path_components': " ".join([seg for path in self.paths for seg in path.split("/")]),
@@ -377,7 +378,10 @@ def photo_event(type):
         if type == 0:
             es.create(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body=target.get_document())
         elif type == 1:
-            es.update(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body={'doc' : target.get_document()})
+            try:
+                es.update(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body={'doc' : target.get_document()})
+            except elasticsearch.exceptions.NotFoundError:
+                es.create(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id, body=target.get_document())
         else:
             es.delete(index=app.config["ELASTICSEARCH_INDEX"], doc_type=target.__document_name__, id=target.id)
     return inner
