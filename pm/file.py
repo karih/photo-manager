@@ -5,6 +5,8 @@ import logging
 import datetime
 import hashlib
 
+import sqlalchemy as sa
+
 from . import app, db, helpers, models, image_processing, exif
 
 
@@ -97,14 +99,20 @@ def seq_file_to_photo():
             lambda **kwargs: db.commit()
         ):
 
-        metadata = exif.PhotoExif(file.path)
         try:
-            photo = [f for f in models.File.query.filter(models.File.photo_id != None).filter(models.File.path.contains(drop_dir_ext(file.path))) if drop_dir_ext(f.path) == drop_dir_ext(file.path) and f.photo.date == metadata.date][0].photo
+            photo = models.File.query.filter(models.File.hash == file.hash).filter(models.File.photo_id != None)[0].photo
             file.photo = photo
         except IndexError:
-            photo = models.Photo(**metadata.get_dict())
-            file.photo = photo
-            db.add(photo)
+            metadata = exif.PhotoExif(file.path)
+            try:
+                photo = [f for f in models.File.query.filter(models.File.photo_id != None).filter(
+                    sa.or_(models.File.hash == file.hash, models.File.path.contains(drop_dir_ext(file.path)))
+                ) if f.hash == file.hash or (drop_dir_ext(f.path) == drop_dir_ext(file.path) and f.photo.date == metadata.date)][0].photo
+                file.photo = photo
+            except IndexError:
+                photo = models.Photo(**metadata.get_dict())
+                file.photo = photo
+                db.add(photo)
 
 def seq_create_thumbnails():
     """ Ensure every photo object has a corresponding thumbnail """

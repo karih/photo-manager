@@ -297,6 +297,15 @@ class Photo(Base):
         #fields = ('width', 'height', 'date', 'dirnames', 'model', 'lens')
         #return {k: getattr(self, k) for k in fields}
 
+    def merge(self, photo):
+        for file in photo.files:
+            file.photo = self
+
+        for labels in photo.labels:
+            self.labels.append(labels)
+
+        photo.labels = []
+
 #    def dct(self):
 #        return {
 #            'id' : self.id,
