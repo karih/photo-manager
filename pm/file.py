@@ -92,6 +92,7 @@ def seq_file_to_photo():
         logging.debug("file_to_photo: starting batch %d-%d/%d" % (offset, offset+limit, rows))
 
     for file in models.model_iterator( 
+            #models.File.query.filter(models.File.photo_id == None).filter(models.File.error == None).filter(models.File.deleted == False), 
             models.File.query.filter(models.File.photo_id == None).filter(models.File.error == None).filter(models.File.deleted == False), 
             pre, 
             lambda **kwargs: db.commit()

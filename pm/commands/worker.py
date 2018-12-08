@@ -21,9 +21,10 @@ def main(*args):
         source_file = file.path
         dest_file   = file.get_path(task['size'])
         if os.path.exists(dest_file):
+            logger.info("Skipping dst=%30s size=%s dst=%s", dest_file, task["size"], source_file)
             continue
-        
-        logger.info("Resizing src=%s dst=%s to size %s", source_file, dest_file, task["size"])
+        else:
+            logger.info("Resizing dst=%30s size=%s dst=%s", dest_file, task["size"], source_file)
         try:
             image_processing.create_thumbnails(source_file, [(app.config["SIZES"][task["size"]][0:2], dest_file, )])
         except Exception as e:

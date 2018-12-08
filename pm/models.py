@@ -224,13 +224,13 @@ class Photo(Base):
 
     ### foreign keys
     # here while ordering we prioritize jpg and png above raw photos (for reduced thumbnailing load)
-    files = relationship("File", back_populates="photo", order_by=sa.case(
+    files = relationship("File", back_populates="photo", order_by=[sa.case(
         [ 
-            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-3, sa.func.length(File.path))) == "jpg", 0),
+            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-2, sa.func.length(File.path))) == "jpg", 0),
             ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-3, sa.func.length(File.path))) == "jpeg", 0),
-            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-3, sa.func.length(File.path))) == "png", 1),
+            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-2, sa.func.length(File.path))) == "png", 1),
         ], else_=2
-    ))
+    ), sa.desc(File.size), sa.asc(File.id)])
 
     group_id = sa.Column(sa.Integer, sa.ForeignKey('groups.id'), nullable=True)
     group = relationship("Group", back_populates="photos")

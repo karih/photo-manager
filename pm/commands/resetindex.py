@@ -4,12 +4,37 @@ import re
 import sys
 import logging
 
+import elasticsearch
+
 from .. import app, es
 from .. import models
 from ..search import index
 
 def main(*args):
     """ Drops and rebuilds the elasticsearch index """
+    
+
+    for pid in range(126000):
+        if pid % 100 == 0:
+            print("========== Processed %d photos" % pid)
+        photo = models.Photo.query.get(pid)
+
+        if photo is None:
+            try:
+                es.delete(index=app.config["ELASTICSEARCH_INDEX"], doc_type="photo", id=pid)
+            except elasticsearch.exceptions.NotFoundError:
+                pass
+            continue
+
+        try:
+            es.update(index=app.config["ELASTICSEARCH_INDEX"], doc_type="photo", id=photo.id, body={'doc': photo.get_document()})
+        except elasticsearch.exceptions.NotFoundError:
+            es.create(index=app.config["ELASTICSEARCH_INDEX"], doc_type="photo", id=photo.id, body=photo.get_document())
+
+    sys.exit(0)
+
+
+
 
     idx = index.Index()
     idx.delete()

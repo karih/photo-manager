@@ -68,7 +68,7 @@ def simple_search():
         q=request.args["q"],
         from_=request.args.get("offset", 0),
         size=request.args.get("limit", 20),
-        sort=request.args.get("sort_column", "id") + ":" + request.args.get("sort_order", "desc")
+        sort=request.args.get("sort_column", "id") + ":" + request.args.get("sort_order", "desc") + ",id:asc"
     )
 
     def map_result_to_answer(dct):
