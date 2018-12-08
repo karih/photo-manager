@@ -11,6 +11,10 @@ import flask
 
 from wand.image import Image
 
+
+logger = logging.getLogger(__name__)
+
+
 INFO = {
     "width" : None,
     "height" : None,
@@ -101,6 +105,7 @@ class PhotoExif(object):
         if self._exiftool_info is None:
             self._exiftool_info = {}
             for f, file in enumerate(self.files):
+                logger.info("Running %s", " ".join(['exiftool', "-charset", "utf8", "-json", "-n", file]))
                 cp = subprocess.run(['exiftool', "-charset", "utf8", "-json", "-n", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 try:
                     self._exiftool_info[f] = json.loads(cp.stdout.decode('utf-8'))[0]

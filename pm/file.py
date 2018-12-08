@@ -8,6 +8,8 @@ import hashlib
 from . import app, db, helpers, models, image_processing, exif
 
 
+logger = logging.getLogger(__name__)
+
 def scan_for_new_files():
     """ 
         Scan the filesystem for images not present in the database 
@@ -92,10 +94,10 @@ def seq_file_to_photo():
         logging.debug("file_to_photo: starting batch %d-%d/%d" % (offset, offset+limit, rows))
 
     for file in models.model_iterator( 
-            #models.File.query.filter(models.File.photo_id == None).filter(models.File.error == None).filter(models.File.deleted == False), 
             models.File.query.filter(models.File.photo_id == None).filter(models.File.error == None).filter(models.File.deleted == False), 
             pre, 
-            lambda **kwargs: db.commit()
+            lambda **kwargs: db.commit(),
+            limit=10
         ):
 
         try: 
@@ -110,6 +112,8 @@ def seq_file_to_photo():
                 photo = models.Photo(**metadata.get_dict())
                 file.photo = photo
                 db.add(photo)
+            except OSError:
+                logger.exception("Skipping entry due to exception")
 
 def seq_create_thumbnails():
     """ Ensure every photo object has a corresponding thumbnail """

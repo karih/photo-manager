@@ -33,7 +33,7 @@ def main(*args):
         ### Scan for new files
         # Search for files not already in the `files` table and proceed
         # to add them
-        #file.scan_for_new_files()
+        file.scan_for_new_files()
         # Search through the files table for orphans (no photo_id), extract
         # exif information of those photos and either create a new photo
         # object or attach to an existing one

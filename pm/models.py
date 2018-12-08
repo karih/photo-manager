@@ -29,9 +29,8 @@ FORMAT_EXTENSIONS = (
 )
 
 
-def model_iterator(query, pre=None, post=None):
+def model_iterator(query, pre=None, post=None, limit=1000):
     rows = query.count()
-    limit = 1000
     
     for offset in [x*limit for x in range(rows//limit + 1)]:
         if pre is not None:

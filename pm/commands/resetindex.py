@@ -14,7 +14,7 @@ def main(*args):
     """ Drops and rebuilds the elasticsearch index """
     
 
-    for pid in range(126000):
+    for pid in range(126000,166813+1):
         if pid % 100 == 0:
             print("========== Processed %d photos" % pid)
         photo = models.Photo.query.get(pid)
