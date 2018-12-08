@@ -1,9 +1,8 @@
 
 /* IMAGE BLOCKS */
-div.photo-list .img-outer { display: inline-block; width: 280px; height: 300px; }
+div.photo-list .img-outer { display: inline-block; width: 264px; height: 284px; }
 div.photo-list .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 254px; height: 274px; }
 div.photo-list .img-block:hover {  background-color: orange; }
-div.photo-list .img-block.expanded { background-color: red; }
 div.photo-list .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 240px; height: 240px; }
 div.photo-list .img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
 div.photo-list .img-text { margin: 7px 0px 0 0px; height: 20px; }
@@ -12,12 +11,19 @@ div.photo-list .img-block img { vertical-align: middle; max-width: 240px; max-he
 
 .photo-single .img-outer { display: block; width: 840x; height: 840px; }
 .photo-single .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 814px; height: 814px; }
-.photo-single .img-block:hover {  background-color: orange; }
-.photo-single .img-block.expanded { background-color: red; }
 .photo-single .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 7px; left: 7px; width: 800px; height: 800px; }
 .photo-single .img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
 .photo-single .img-block img { vertical-align: middle; max-width: 800px; max-height: 800px; }
 
+.neighbors .img-outer { display: inline-block; width: 89px; height: 89px; }
+.neighbors .img-block { background-color: #EEE; padding: 0; display: inline-block; margin: 5px; width: 79px; height: 79px; }
+.neighbors .img-block:hover {  background-color: orange; }
+.neighbors .img-inner { position: relative; background-color: #CCC; text-align: center; white-space: nowrap; top: 2px; left: 2px; width: 75px; height: 75px; }
+.neighbors .img-inner:before { content: ""; display: inline-block; height: 100%; vertical-align: middle; }
+.neighbors .img-block img { vertical-align: middle; max-width: 75px; max-height: 75px; }
+
+.current div.img-block { background-color: black; }
+.current div.img-block:hover { background-color: black; }
 
 .sidebar {
 	position: fixed;

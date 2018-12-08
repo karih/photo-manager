@@ -46,6 +46,7 @@ export class App extends React.Component {
 					sort_column:{type: "string", values: ["id", "date"], default: "date"},
 					offset:     {type: "int", default: 0},
 					limit:      {type: "int", default: 20},
+					pos:        {type: "int", default: -1},
 				},
 			},
 			photo: {
