@@ -375,7 +375,7 @@ export class PhotoSingle extends React.Component {
 
 	files() {
 		return this.state.files.map((file, n) => 
-			<tr>
+			<tr key={file.id}>
 				<td>#{file.id}</td>
 				<td>{file.path}</td>
 				<td>{(file.size/1024/1024).toFixed(2)}</td>
@@ -407,7 +407,7 @@ export class PhotoSingle extends React.Component {
 					</div>
 					<Photo file_url={this.state.sizes.z} />
 					<table className="table table-striped">
-						<thead class="thead-dark">
+						<thead className="thead-dark">
 							<tr>
 								<th>#id</th>
 								<th>Path</th>
@@ -421,20 +421,41 @@ export class PhotoSingle extends React.Component {
 						</tbody>
 					</table>
 					<table className="table table-striped">
-						<thead class="thead-dark">
+						<thead className="thead-dark">
 							<tr>
 								<th>Property</th>
 								<th>Value</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr> <td>Date</td>                <td>{this.state.date}</td> </tr>
-							<tr> <td>Aperture</td>            <td>{this.state.aperture}</td> </tr>
-							<tr> <td>Exposure</td>            <td>1/{(1/this.state.exposure).toFixed(2)}s</td> </tr>
-							<tr> <td>Make / Model</td>        <td>{this.state.make} / {this.state.model}</td> </tr>
-							<tr> <td>Lens</td>                <td>{this.state.lens}</td> </tr>
-							<tr> <td>ISO</td>                 <td>{this.state.iso}</td> </tr>
-							<tr> <td>Focal Length (35mm)</td> <td>{this.state.focal_length} ({this.state.focal_length_35})</td> </tr>
+							<tr>
+								<td>Date</td>
+								<td>{this.state.date}</td>
+							</tr>
+							<tr>
+								<td>Aperture</td>
+								<td>{this.state.aperture}</td>
+							</tr>
+							<tr>
+								<td>Exposure</td>
+								<td>1/{(1/this.state.exposure).toFixed(2)}s</td>
+							</tr>
+							<tr>
+								<td>Make / Model</td>
+								<td>{this.state.make} / {this.state.model}</td>
+							</tr>
+							<tr>
+								<td>Lens</td>
+								<td>{this.state.lens}</td>
+							</tr>
+							<tr>
+								<td>ISO</td>
+								<td>{this.state.iso}</td>
+							</tr>
+							<tr>
+								<td>Focal Length (35mm)</td>
+								<td>{this.state.focal_length} ({this.state.focal_length_35})</td>
+							</tr>
 						</tbody>
 					</table>
 				</main>
