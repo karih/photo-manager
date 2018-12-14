@@ -30,18 +30,32 @@ def send_file(app, f, **kwargs):
     else:
         return flask.send_file(f, **kwargs)
 
-def resize_dimensions(orig, outer, box=False):
+def resize_dimensions(orig, outer):
     """ Given the original dimension `orig` and the `outer` dimension of the thumbnail,
         calculate the actual destination resolution (without cropping and stretching).
         With `box` as true, calculate the destination size and offset resulting in a 
         non-stretched cropped version of orig that fits in outer (using up all the box).
     """
-    if box:
-        scaling = min(1, max(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
-        excess = orig[0] * scaling - outer[0], orig[1] * scaling - outer[1]
-        offset = max(0, excess[0]//2), max(0, excess[1]//2)
-        return round(orig[0]*scaling), round(orig[1]*scaling), offset[0], offset[1]
+    scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
+    return round(orig[0]*scaling), round(orig[1]*scaling)
+
+def crop_box_dimensions(orig, outer):
+    """ Crop the image and then scale to fit the box specified by `outer` """
+   
+    desired_ratio = outer[1] / outer[0]
+    orig_ratio = orig[1] / orig[0]
+
+    left, top = 0, 0
+    width, height = orig
+    if orig_ratio > desired_ratio:
+        # image is too tall
+        height = round(orig[0] * desired_ratio)
+        assert orig[1] >= height
+        top = round((orig[1] - height)/2)
     else:
-        scaling = min(1, min(float(outer[0]) / orig[0], float(outer[1]) / orig[1]))
-        return round(orig[0]*scaling), round(orig[1]*scaling)
+        width = round(orig[1] / desired_ratio)
+        assert orig[0] >= width
+        left = round((orig[0] - width)/2)
+
+    return {'left': left, 'top': top, 'width': width, 'height': height}
 

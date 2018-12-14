@@ -7,6 +7,9 @@ import wand
 from . import app, helpers
 
 
+logger = logging.getLogger(__name__)
+
+
 def create_photo_thumbnails(photo):
     if not os.path.exists(photo.path_large) or not os.path.exists(photo.path_thumb):
         logging.debug("Creating thumbnails")
@@ -31,12 +34,23 @@ def create_thumbnails(filename, thumbnails):
     """
 
     with wand.image.Image(filename=filename) as im:
-        for size, dest in thumbnails:
+        for (w,h,c), dest in thumbnails:
             #logging.debug("Creating thumbnail %s from filename %s", dest, filename)
             with im.clone() as cl:
                 cl.format = 'jpeg'
                 cl.auto_orient()
-                cl.resize(*helpers.resize_dimensions((cl.width, cl.height), size))
-                cl.save(filename=dest)
+                cl.strip()
+                if c: # crop box
+                    cl.crop(**helpers.crop_box_dimensions((cl.width, cl.height), (w, h)))
+                    cl.resize(w, h)
+                else: # preserve aspect ratio
+                    cl.resize(*helpers.resize_dimensions((cl.width, cl.height), (w, h)))
+                try:
+                    cl.save(filename=dest)
+                except wand.exceptions.BlobError:
+                    os.makedirs(os.path.dirname(dest))
+                    cl.save(filename=dest)
+
+
 
 

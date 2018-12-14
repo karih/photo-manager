@@ -26,6 +26,6 @@ def main(*args):
         else:
             logger.info("Resizing dst=%30s size=%s dst=%s", dest_file, task["size"], source_file)
         try:
-            image_processing.create_thumbnails(source_file, [(app.config["SIZES"][task["size"]][0:2], dest_file, )])
+            image_processing.create_thumbnails(source_file, [(app.config["SIZES"][task["size"]][0:3], dest_file, )])
         except Exception as e:
             logger.exception("Exception while resizing photo")
