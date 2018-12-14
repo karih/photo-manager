@@ -48,7 +48,10 @@ def create_thumbnails(filename, thumbnails):
                 try:
                     cl.save(filename=dest)
                 except wand.exceptions.BlobError:
-                    os.makedirs(os.path.dirname(dest))
+                    try:
+                        os.makedirs(os.path.dirname(dest))
+                    except FileExistsError: # it is possible (but unlikely) that another process just created the directory
+                        pass
                     cl.save(filename=dest)
 
 
