@@ -171,7 +171,7 @@ class File(Base):
         hash.update(self.hash.encode('utf-8'))
         hash.update((":".join(map(str, app.config['SIZES'][size]))).encode('utf-8'))
 
-        return os.path.join(app.config['TEMP_DIR'], "files", "size_%s" % size, hash.hexdigest()[:2], 'file_%s.jpg' % hash.hexdigest()[:30])
+        return os.path.join(app.config['TEMP_DIR'], "files", hash.hexdigest()[:3], 'file_%s.jpg' % hash.hexdigest()[:30])
 
 #people_association_table = sa.Table('people_photos', Base.metadata,
 #    sa.Column('people_id', sa.Integer, sa.ForeignKey('people.id')),
