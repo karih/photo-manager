@@ -20,7 +20,8 @@ module.exports = {
 	},
   output: {
     path: path.resolve(__dirname, 'pm/static'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: '/static/'
   }
 };
 
