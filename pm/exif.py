@@ -138,7 +138,7 @@ class PhotoExif(object):
     def exposure(self):
         return first(parse(i, "ExposureTime", exposure_parse) for i in self.exiftool_info())
 
-    def get_dict(self):
+    def __dict__(self):
         return {
             'width' : self.width,
             'height' : self.height,
@@ -147,6 +147,7 @@ class PhotoExif(object):
             'exposure' : self.exposure,
         }
 
+        
 
     '''
     info["focal_length"] = parse(params, "FocalLength", focal_parse)

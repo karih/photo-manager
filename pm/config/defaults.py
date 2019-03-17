@@ -45,9 +45,7 @@ SAVE_GROUP = None
 # this should be a list of two-tuples, where the first entry is a directory, and the 
 # second entry is a user or list of users which are considered "owners" of these files
 # users can be specified by username (string) or database id (integers)
-SEARCH_ROOTS = [
-    (os.environ['HOME'], 1)
-]
+SEARCH_ROOTS = [os.environ['HOME'], ]
 # SEARCH_EXCLUDE_DIRS is a list of regular expression patterns, which if matched 
 # using re.fullmatch() will not traverse into matched directory
 SEARCH_EXCLUDE_DIRS = [

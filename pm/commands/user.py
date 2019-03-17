@@ -61,12 +61,15 @@ def add_user(args):
     db.commit()
 
 def change_password(args):
-    if len(args) != 1 or not user_exists(args[0]):
+    if len(args) < 1 or not user_exists(args[0]):
         print("User does not exist")
         sys.exit(1)
+    if len(args) > 1:
+        password = args[1]
+    else:
+        password = random_password()
 
     user = models.User.query.filter(models.User.username==args[0]).all()[0]
-    password = random_password()
     user.set_password(password)
     print("Password set to %s" % password)
     db.commit()
@@ -77,6 +80,8 @@ def summary(args):
     for user in models.User.query.all():
         print(" %-4d | %-20s | %-5d" % (user.id, user.username, len(user.files)))
 
+def sync_system_passwd(args):
+    models.User.sync_system_passwd()
 
 def main(*args):
     commands = {
@@ -84,7 +89,8 @@ def main(*args):
         'password' : change_password,
         #'rmuser' : rmuser,
         #'password' : password,
-        'summary' : summary
+        'sync_system_passwd': sync_system_passwd,
+        'summary' : summary,
     }
 
     parser = argparse.ArgumentParser()

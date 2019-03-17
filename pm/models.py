@@ -41,9 +41,13 @@ def model_iterator(query, pre=None, post=None, limit=1000):
             post(offset=offset, limit=limit, rows=rows)
 
 
-user_files_association_table = sa.Table('users_files', Base.metadata,
-    sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id')),
-    sa.Column('file_id', sa.Integer, sa.ForeignKey('files.id'))
+labels_association_table = sa.Table('labels_photos', Base.metadata,
+    sa.Column('label_id', sa.Integer, sa.ForeignKey('labels.id')),
+    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
+)
+photo_file_association_table = sa.Table('photo_files', Base.metadata,
+    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id')),
+    sa.Column('file_id',  sa.Integer, sa.ForeignKey('files.id'))
 )
 
 
@@ -51,17 +55,21 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sa.Column(sa.Integer, primary_key=True)
-    username = sa.Column(sa.String(1000), nullable=False, unique=True)
-    password = sa.Column(sa.String(1000), nullable=False)
-    totp  = sa.Column(sa.String(1000), nullable=True)
-    admin = sa.Column(sa.Boolean, default=False, nullable=True)
+    username   = sa.Column(sa.String(1000), nullable=False, unique=True)
+    password   = sa.Column(sa.String(1000), nullable=True)
+    #totp       = sa.Column(sa.String(1000), nullable=True)
+    admin      = sa.Column(sa.Boolean, default=False)
+    system_uid = sa.Column(sa.Integer, nullable=True, index=True, unique=True)
 
     last_movement       = sa.Column(sa.DateTime, nullable=True)
     last_authentication = sa.Column(sa.DateTime, nullable=True)
     last_pw_change      = sa.Column(sa.DateTime, nullable=True)
 
-    files    = relationship("File", back_populates="users", secondary=user_files_association_table)
-    sessions = relationship("Session", back_populates="user")
+    #files    = relationship("File", back_populates="users", secondary=user_files_association_table)
+    source_files = relationship("SourceFile", back_populates="owner")
+    photos       = relationship("Photo",      back_populates="owner")
+    labels       = relationship("Label",      back_populates="owner")
+    sessions     = relationship("Session",    back_populates="user")
 
     def set_password(self, password):
         from passlib.hash import scrypt
@@ -78,6 +86,22 @@ class User(Base):
             return user
         else:
             raise ValueError("Invalid username/password combination")
+
+    @classmethod
+    def sync_system_passwd(cls, min_uid=1000, max_uid=49999):
+        import pwd
+        users = [user for user in pwd.getpwall() if user.pw_uid >= min_uid and user.pw_uid <= max_uid]
+        created = []
+        for user_entry in users:
+            try:
+                user = cls(username=user_entry.pw_name, system_uid=user_entry.pw_uid)
+                db.add(user)
+                db.commit()
+                created.append(user)
+            except:
+                db.rollback()
+
+        return created
 
 
 class Session(Base):
@@ -123,25 +147,30 @@ class Session(Base):
         db.commit()
 
 
-class File(Base):
-    __tablename__ = 'files'
+class SourceFile(Base):
+    """ 
+        This table lists individual files in the file system.
+        Identical files (as determined by the file hash) are grouped together through `File`
+    """
 
-    FORMATS = [x[0] for x in FORMAT_EXTENSIONS]
+    __tablename__ = 'source_files'
 
-    id = sa.Column(sa.Integer, primary_key=True)
-    ctime = sa.Column(sa.DateTime, nullable=False)
-    path = sa.Column(sa.String(1000), nullable=False, unique=True)
-    scanned = sa.Column(sa.DateTime, server_default=func.now()) # datetime of file discovery
-    error = sa.Column(sa.Text, nullable=True) 
-    deleted = sa.Column(sa.Boolean, nullable=False, server_default='f', default=False) 
+    id         = sa.Column(sa.Integer,      primary_key=True)
+    ctime      = sa.Column(sa.DateTime,     nullable=False)
+    path       = sa.Column(sa.String(1000), nullable=False, index=True, unique=True)
+    first_scan = sa.Column(sa.DateTime,     server_default=func.now()) # datetime of first file discovery
+    last_scan  = sa.Column(sa.DateTime,     server_default=func.now()) # datetime of last file discovery
+    deleted    = sa.Column(sa.Boolean,      nullable=False, server_default='f', default=False) 
+    inode      = sa.Column(sa.Integer,      nullable=False) # inode in the particular filesystem
+    device     = sa.Column(sa.Numeric(precision=24, scale=0), nullable=False) # the device id as reported by the OS - right now this is a combination of the major/minor number which can change across reboots
 
-    hash = sa.Column(sa.String(128), nullable=False) # sha512 hexdigest
-    size = sa.Column(sa.Integer, nullable=False)
+    disk_size  = sa.Column(sa.BigInteger, nullable=False) # stat.st_blocks * 512 -- https://docs.python.org/3/library/os.html#os.stat_result.st_blocks
 
-    photo_id = sa.Column(sa.Integer, sa.ForeignKey('photos.id'), nullable=True)
-    photo = relationship("Photo", back_populates="files")
+    owner_id   = sa.Column(sa.Integer, sa.ForeignKey('users.id'), nullable=False)
+    owner      = relationship("User",  back_populates="source_files")
 
-    users = relationship("User", back_populates="files", secondary=user_files_association_table)
+    file_id    = sa.Column(sa.Integer, sa.ForeignKey('files.id'), nullable=False)
+    file       = relationship("File",  back_populates="source_files")
 
     @property
     def basename(self):
@@ -166,6 +195,48 @@ class File(Base):
                 return i
         raise ValueError("Unknown extension %s" % ext)
 
+    def update_last_scan(self):
+        self.last_scan = func.now()
+
+
+metadata = dict(
+    date            = sa.Column(sa.DateTime,     nullable=True), # exif timestamp
+    aperture        = sa.Column(sa.Float,        nullable=True),
+    exposure        = sa.Column(sa.Float,        nullable=True),
+    focal_length    = sa.Column(sa.Float,        nullable=True),
+    focal_length_35 = sa.Column(sa.Float,        nullable=True),
+    iso             = sa.Column(sa.Integer,      nullable=True),
+    make            = sa.Column(sa.String(128),  nullable=True),
+    model           = sa.Column(sa.String(128),  nullable=True),
+    orientation     = sa.Column(sa.SmallInteger, nullable=True),
+    lens            = sa.Column(sa.String(128),  nullable=True),
+    program         = sa.Column(sa.Integer,      nullable=True), # Aperture-priority/speed-priority/manual etc.
+    exposure_mode   = sa.Column(sa.Integer,      nullable=True),
+    release_mode    = sa.Column(sa.Integer,      nullable=True), # burst, bracketing, etc
+    sequence_number = sa.Column(sa.Integer,      nullable=True), # burst sequence number
+)
+
+
+PhotoMetadataMixin            = type('PhotoMetadataMixin',            (object, ), metadata)
+PhotoMetadataWithChangesMixin = type('PhotoMetadataWithChangesMixin', (object, ), {**metadata, **{("%s_changed" % k): sa.Column(sa.DateTime, nullable=True) for k in metadata.keys()}})
+
+
+class File(PhotoMetadataMixin, Base):
+    __tablename__ = 'files'
+
+    FORMATS = [x[0] for x in FORMAT_EXTENSIONS]
+
+    id = sa.Column(sa.Integer, primary_key=True)
+
+    hash      = sa.Column(sa.String(128), nullable=False, index=True, unique=True) # sha512 hexdigest
+    file_size = sa.Column(sa.BigInteger,  nullable=False) # stat.st_size -- https://docs.python.org/3/library/os.html#os.stat_result.st_size 
+    source_files = relationship("SourceFile", back_populates="file")
+    photos       = relationship("Photo",      secondary=photo_file_association_table, back_populates="files", lazy='dynamic')
+
+    # METADATA
+    width  = sa.Column(sa.Integer, nullable=True)
+    height = sa.Column(sa.Integer, nullable=True)
+
     def get_path(self, size):
         hash = m = hashlib.sha256()
         hash.update(self.hash.encode('utf-8'))
@@ -173,88 +244,62 @@ class File(Base):
 
         return os.path.join(app.config['TEMP_DIR'], "files", hash.hexdigest()[:3], 'file_%s.jpg' % hash.hexdigest()[:30])
 
-#people_association_table = sa.Table('people_photos', Base.metadata,
-#    sa.Column('people_id', sa.Integer, sa.ForeignKey('people.id')),
-#    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
-#)
-#
-#
-labels_association_table = sa.Table('labels_photos', Base.metadata,
-    sa.Column('label_id', sa.Integer, sa.ForeignKey('labels.id')),
-    sa.Column('photo_id', sa.Integer, sa.ForeignKey('photos.id'))
-)
 
 
-class Photo(Base):
-    """ All information in this table is extracted from the image file itself,
+
+class Photo(PhotoMetadataWithChangesMixin, Base):
+    """ 
+        All information in this table is extracted from the image file itself,
         none of it is editable in any interface.
         This is an object that groups different files that correspond to the same photo (same shutter opening),
-        if there exists a jpg and raw edition of the photo they will only have one Photo object.
+        for example, if there exists a jpg and raw edition of the photo they will only have one Photo object.
     """
     __tablename__ = 'photos'
 
     id = sa.Column(sa.Integer, primary_key=True)
 
-    width = sa.Column(sa.SmallInteger, nullable=False)
-    height = sa.Column(sa.SmallInteger, nullable=False)
-
-    # most important exif data
-    date = sa.Column(sa.DateTime, nullable=True) # exif timestamp
-    aperture = sa.Column(sa.Float, nullable=True)
-    exposure = sa.Column(sa.Float, nullable=True)
-    focal_length = sa.Column(sa.Float, nullable=True)
-    focal_length_35 = sa.Column(sa.Float, nullable=True)
-    iso = sa.Column(sa.Integer, nullable=True)
-    make = sa.Column(sa.String(128), nullable=True)
-    model = sa.Column(sa.String(128), nullable=True)
-    orientation = sa.Column(sa.SmallInteger, nullable=True)
-
-    # other exif stuff
-    lens = sa.Column(sa.String(128), nullable=True)
-    program = sa.Column(sa.Integer, nullable=True) # Aperture-priority/speed-priority/manual etc.
-    exposure_mode = sa.Column(sa.Integer, nullable=True)
-    release_mode = sa.Column(sa.Integer, nullable=True) # burst, bracketing, etc
-    sequence_number = sa.Column(sa.Integer, nullable=True) # burst sequence number
-
     # was any of the information manually changed
     changed = sa.Column(sa.DateTime, nullable=True)
-    hidden = sa.Column(sa.Boolean, nullable=False, default=False)
-    deleted = sa.Column(sa.Boolean, nullable=False, default=False)
+    hidden  = sa.Column(sa.Boolean,  nullable=False, default=False)
+    deleted = sa.Column(sa.Boolean,  nullable=False, default=False)
 
     ### foreign keys
     # here while ordering we prioritize jpg and png above raw photos (for reduced thumbnailing load)
-    files = relationship("File", back_populates="photo", order_by=[sa.case(
-        [ 
-            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-2, sa.func.length(File.path))) == "jpg", 0),
-            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-3, sa.func.length(File.path))) == "jpeg", 0),
-            ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-2, sa.func.length(File.path))) == "png", 1),
-        ], else_=2
-    ), sa.desc(File.size), sa.asc(File.id)])
+    #files = relationship("File", back_populates="photo", order_by=[sa.case(
+    #    [ 
+    #        ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-2, sa.func.length(File.path))) == "jpg", 0),
+    #        ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-3, sa.func.length(File.path))) == "jpeg", 0),
+    #        ( sa.func.lower(sa.func.substr(File.path, sa.func.length(File.path)-2, sa.func.length(File.path))) == "png", 1),
+    #    ], else_=2
+    #), sa.desc(File.size), sa.asc(File.id)])
+    files = relationship("File", secondary=photo_file_association_table, back_populates="photos")
 
-    group_id = sa.Column(sa.Integer, sa.ForeignKey('groups.id'), nullable=True)
-    group = relationship("Group", back_populates="photos")
+    group_id   = sa.Column(sa.Integer, sa.ForeignKey('groups.id'), nullable=True )
+    owner_id   = sa.Column(sa.Integer, sa.ForeignKey('users.id'),  nullable=False)
+    group      = relationship("Group", back_populates="photos")
+    owner      = relationship("User",  back_populates="photos")
 
     #people = relationship("Person", secondary=people_association_table, back_populates="photos")
     labels = relationship("Label", secondary=labels_association_table, back_populates="photos")
 
-    #primaries = relationship("Photo", back_populates="file", foreign_keys="Photo.file_id")
-    #derivatives = relationship('PhotoDerivative', back_populates='orig')
+    @property
+    def source_files(self):
+        return [f for file in self.files for f in file.source_files if f.owner == self.owner and not f.deleted]
 
     __document_name__ = "photo"
     __document__ = {
         "properties": {
-            "id":              {"type": "integer" },
+            "photo_id":        {"type": "integer" },
             "paths":           {"type": "keyword" }, 
             "basenames":       {"type": "keyword" }, 
             "dirnames":        {"type": "keyword" }, 
             "date":            {"type": "date" }, 
-            "file_id":         {"type": "integer" },
             "label":           {"type": "keyword" },
             "label_ids":       {"type": "integer" },
             "year":            {"type": "integer" },
             "month":           {"type": "integer" },
-            "path_components": {"type": "text" }
-
+            "path_components": {"type": "text" },
+            #"file_id":         {"type": "integer" },
             #"aperture":        { "type": "float" }, 
             #"exposure":        { "type": "float" }, 
             #"model":           { "type": "text", "index": "not_analyzed" }, 
@@ -270,27 +315,27 @@ class Photo(Base):
 
     @property
     def paths(self):
-        return [f.path for f in self.files if f.deleted is False]
+        return [f.path for f in self.source_files]
 
     @property
     def basenames(self):
-        return sorted(list(set([f.basename for f in self.files])))
+        return sorted(list(set([f.basename for f in self.source_files])))
 
     @property
     def dirnames(self):
-        return sorted(list(set([f.dirname for f in self.files])))
+        return sorted(list(set([f.dirname for f in self.source_files])))
 
     def get_document(self):
         return {
             'id': self.id,
             'date': self.date,
-            'dirnames': self.dirnames,
-            'basenames': self.basenames,
-            'paths': self.paths,
-            'file_id': self.files[0].id if len(self.files) > 0 else None,
+            #'dirnames': self.dirnames,
+            #'basenames': self.basenames,
+            #'paths': self.paths,
+            #'file_id': self.files[0].id if len(self.files) > 0 else None,
             'label': [lbl.label for lbl in self.labels],
             'label_ids': [lbl.id for lbl in self.labels],
-            'path_components': " ".join([seg for path in self.paths for seg in path.split("/")]),
+            #'path_components': " ".join([seg for path in self.paths for seg in path.split("/")]),
             'year': self.date.year if self.date is not None else None,
             'month': self.date.month if self.date is not None else None,
         }
@@ -299,13 +344,18 @@ class Photo(Base):
 
     def merge(self, photo):
         for file in photo.files:
-            file.photo = self
+            self.files.append(file)
 
         for labels in photo.labels:
             self.labels.append(labels)
 
-        photo.labels = []
+        if photo.group:
+            assert self.group is None
+            self.group = photo.group
 
+        photo.labels = []
+        photo.files  = []
+#
 #    def dct(self):
 #        return {
 #            'id' : self.id,
@@ -326,12 +376,13 @@ class Photo(Base):
 #            'model' : self.model,
 #            'lens' : self.lens
 #        }
-
+#
+#
 
 class Group(Base):
     ''' 
-        Group() is an entity corresponding to a single shutter press button.
-        Can be a bracketing group or just a continuous burst shot.
+        Group() is an entity corresponding to a single shutter press.
+        Can be a bracketing group or a continuous burst shot, or possibly something else?
     '''
     __tablename__ = 'groups'
         
@@ -353,11 +404,15 @@ class Group(Base):
 #    photos = relationship("Photo", secondary=people_association_table, back_populates="people")
 #
 #
+
 class Label(Base):
     __tablename__ = "labels"
 
     id = sa.Column(sa.Integer, primary_key=True)
     label = sa.Column(sa.Unicode(255), nullable=False)
+
+    owner_id   = sa.Column(sa.Integer, sa.ForeignKey('users.id'), nullable=False)
+    owner      = relationship("User",  back_populates="labels")
 
     photos = relationship("Photo", secondary=labels_association_table, back_populates="labels")
 

@@ -19,6 +19,10 @@ import psycopg2
 logger = logging.getLogger(__name__)
 
 def main(*args):
+    """
+        Creates an archive of a certain label. 
+        Created out of necessity, needs significant polishing.
+    """
     #file.scan_for_new_files()
     #file.seq_file_to_photo() 
     

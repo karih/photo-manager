@@ -5,7 +5,6 @@ import logging
 
 import flask
 
-import redis
 import elasticsearch
 import sqlalchemy as sa
 from sqlalchemy import create_engine
@@ -16,6 +15,8 @@ import redis as redispy
 
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", filename='flask.log', level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger().addHandler(logging.StreamHandler())
+
+logger = logging.getLogger()
 
 app = flask.Flask(__name__)
 

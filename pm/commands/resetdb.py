@@ -21,7 +21,7 @@ def main(*args):
     db_drop_all()
     print("Initialized database")
     db_create_all()
-    print("Created user admin with password admin")
-    user.add_user(["admin", "admin"])
-
+    created = models.User.sync_system_passwd()
+    print("Synced system passwd to database, creating users: %s" % (",".join(user.username for user in created)))
+    print("Please use manage.py user password <username> to set their initial password.") 
 
