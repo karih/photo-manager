@@ -91,7 +91,6 @@ export class App extends React.Component {
 	
 	render() {
 		var _view = this.router.views[this.router.view].view;
-		console.log("_view", _view, this.router.view, this.router.views);
 		return (
 			<div>
 				<Header />
@@ -100,7 +99,6 @@ export class App extends React.Component {
 						{_view(this.state.args, this.state.params, (...args) => this.onChangeState(...args))}
 					</div>
 				</div>
-				<p> state is {JSON.stringify(this.state)}</p>
 			</div>
 		)
 		//<button type="button" onClick={() => this.test()}>test test</button>

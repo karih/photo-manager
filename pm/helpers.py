@@ -1,13 +1,8 @@
 # encoding: utf-8
 
-import os, sys
-import os.path
-import datetime
-import logging
+import os
 
 import flask
-
-from wand.image import Image
 
 # none of these should depend on anything below pm/
 
@@ -58,4 +53,3 @@ def crop_box_dimensions(orig, outer):
         left = round((orig[0] - width)/2)
 
     return {'left': left, 'top': top, 'width': width, 'height': height}
-
