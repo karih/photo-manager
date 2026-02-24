@@ -2,10 +2,8 @@ import re
 import os
 import os.path
 import logging
-import datetime
-import hashlib
 
-from . import app, db, helpers, models, image_processing, exif
+from . import app, db, models, image_processing
 
 
 logger = logging.getLogger(__name__)
